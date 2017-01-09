@@ -1,40 +1,10 @@
 package com.rafali.flickruploader.ui.activity;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.media.MediaScannerConnection;
-import android.media.MediaScannerConnection.OnScanCompletedListener;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.AbsListView;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.paypal.android.sdk.payments.PayPalService;
+
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.FlickrUploader;
@@ -65,6 +35,35 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.media.MediaScannerConnection;
+import android.media.MediaScannerConnection.OnScanCompletedListener;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -107,26 +106,8 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         if (instance != null)
             instance.finish();
         instance = activity;
-        Utils.checkPremium(false, new Utils.Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                checkPremium();
-                renderMenu();
-            }
-        });
+        renderMenu();
         handleIntent(getIntent());
-    }
-
-    @UiThread
-    void checkPremium() {
-        if (!Utils.isPremium() && !Utils.isTrial()) {
-            Utils.showPremiumDialog(activity, new Callback<Boolean>() {
-                @Override
-                public void onResult(Boolean result) {
-                    renderMenu();
-                }
-            });
-        }
     }
 
     boolean finishOnClose = false;
@@ -345,7 +326,6 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         UploadService.unregister(drawerHandleView);
         UploadService.unregister(drawerContentView);
         UploadService.unregister(uploadProgressListener);
-        stopService(new Intent(this, PayPalService.class));
     }
 
     public boolean destroyed = false;
@@ -1014,49 +994,39 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
 
     @UiThread
     void renderMenu() {
-        if (menu != null && menu.findItem(R.id.trial_info) != null) {
-            menu.findItem(R.id.trial_info).setVisible(!Utils.isPremium());
-            switch (Utils.getViewSize()) {
-                case small:
-                    menu.findItem(R.id.view_size_small).setChecked(true);
-                    break;
-                case medium:
-                    menu.findItem(R.id.view_size_medium).setChecked(true);
-                    break;
-                case large:
-                    menu.findItem(R.id.view_size_large).setChecked(true);
-                    break;
-                default:
-                    break;
-            }
-            menu.findItem(R.id.filter_photos).setChecked(Utils.getShowPhotos());
-            menu.findItem(R.id.filter_videos).setChecked(Utils.getShowVideos());
-            menu.findItem(R.id.filter_uploaded).setChecked(Utils.getShowUploaded());
-            menu.findItem(R.id.filter_not_uploaded).setChecked(Utils.getShowNotUploaded());
-            switch (Utils.getViewGroupType()) {
-                case date:
-                    menu.findItem(R.id.group_by_date).setChecked(true);
-                    break;
-                case folder:
-                    menu.findItem(R.id.group_by_folder).setChecked(true);
-                    break;
-                default:
-                    break;
+        switch (Utils.getViewSize()) {
+            case small:
+                menu.findItem(R.id.view_size_small).setChecked(true);
+                break;
+            case medium:
+                menu.findItem(R.id.view_size_medium).setChecked(true);
+                break;
+            case large:
+                menu.findItem(R.id.view_size_large).setChecked(true);
+                break;
+            default:
+                break;
+        }
+        menu.findItem(R.id.filter_photos).setChecked(Utils.getShowPhotos());
+        menu.findItem(R.id.filter_videos).setChecked(Utils.getShowVideos());
+        menu.findItem(R.id.filter_uploaded).setChecked(Utils.getShowUploaded());
+        menu.findItem(R.id.filter_not_uploaded).setChecked(Utils.getShowNotUploaded());
+        switch (Utils.getViewGroupType()) {
+            case date:
+                menu.findItem(R.id.group_by_date).setChecked(true);
+                break;
+            case folder:
+                menu.findItem(R.id.group_by_folder).setChecked(true);
+                break;
+            default:
+                break;
 
-            }
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.trial_info:
-                Utils.showPremiumDialog(activity, new Utils.Callback<Boolean>() {
-                    @Override
-                    public void onResult(Boolean result) {
-                    }
-                });
-                break;
             case R.id.preferences:
                 startActivity(new Intent(activity, PreferencesActivity.class));
                 break;
@@ -1135,14 +1105,10 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
                 computeHeaders(false);
                 break;
             case R.id.upload_add:
-                if (Utils.isPremium() || Utils.isTrial()) {
-                    if (selectedMedia.isEmpty()) {
-                        Utils.toast("Select at least one file");
-                    } else {
-                        confirmUpload(selectedMedia);
-                    }
+                if (selectedMedia.isEmpty()) {
+                    Utils.toast("Select at least one file");
                 } else {
-                    checkPremium();
+                    confirmUpload(selectedMedia);
                 }
                 break;
             case R.id.upload_remove:
@@ -1191,9 +1157,6 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     @UiThread
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (Utils.onActivityResult(requestCode, resultCode, data)) {
-            return;
-        }
         if (resultCode == FlickrWebAuthActivity.RESULT_CODE_AUTH) {
             if (FlickrApi.isAuthentified()) {
                 Utils.showAutoUploadDialog(activity);

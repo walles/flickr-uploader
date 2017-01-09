@@ -58,7 +58,6 @@ dependencies {
     compile 'org.androidannotations:androidannotations-api:3.3.2'
     compile project(':sprinkles')
     compile 'com.squareup.okhttp:okhttp:2.4.0'
-    compile files('libs/PayPalAndroidSDK-2.11.0.jar')
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile('com.github.chrisbanes.bitmapcache:library:2.3') {
         exclude module: 'support-v4'

@@ -1,25 +1,7 @@
 package com.rafali.flickruploader.ui.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBar;
-import android.view.MenuItem;
-
 import com.google.android.gms.analytics.GoogleAnalytics;
+
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.Config;
@@ -34,8 +16,24 @@ import com.rafali.flickruploader2.R;
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
+import android.view.MenuItem;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -273,56 +271,9 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 			login.setSummary("Click here to sign out " + Utils.getStringProperty(STR.userName));
 		}
 		Preference premium = findPreference(STR.premium);
-		if (Utils.isPremium()) {
-			premium.setTitle("You are using the PRO version");
-			premium.setSummary("Thank you!");
-		} else {
-			if (Utils.isTrial()) {
-				premium.setTitle("PRO version usable for free");
-				premium.setSummary("until " + SimpleDateFormat.getDateInstance().format(new Date(Utils.trialUntil())));
-			} else {
-				premium.setTitle("Your trial of the app has ended");
-				premium.setSummary("Click here to buy the PRO version");
-				((CheckBoxPreference) findPreference(AUTOUPLOAD)).setChecked(false);
-				((CheckBoxPreference) findPreference(AUTOUPLOAD_VIDEOS)).setChecked(false);
-				OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
-					@Override
-					public boolean onPreferenceClick(Preference preference) {
-						Utils.showPremiumDialog(activity, new Utils.Callback<Boolean>() {
-							@Override
-							public void onResult(Boolean result) {
-								render();
-							}
-						});
-						return false;
-					}
-				};
-				findPreference(AUTOUPLOAD).setOnPreferenceClickListener(onPreferenceClickListener);
-				findPreference(AUTOUPLOAD_VIDEOS).setOnPreferenceClickListener(onPreferenceClickListener);
-			}
-			premium.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-				@Override
-				public boolean onPreferenceClick(Preference preference) {
-					Utils.showPremiumDialog(activity, new Utils.Callback<Boolean>() {
-						@Override
-						public void onResult(Boolean result) {
-							render();
-						}
-					});
-					return false;
-				}
-			});
-		}
+		premium.setTitle("You are using the PRO version");
+		premium.setSummary("Thank you!");
 	}
-
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (Utils.onActivityResult(requestCode, resultCode, data)) {
-			return;
-		}
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-
-	String currentDonation;
 
 	Handler handler;
 

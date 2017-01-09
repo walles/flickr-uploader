@@ -41,9 +41,6 @@
         android:label="Flickr Uploader"
         android:theme="@style/CustomTheme" >
         <service android:name="com.rafali.flickruploader.service.UploadService" />
-        <service
-            android:name="com.paypal.android.sdk.payments.PayPalService"
-            android:exported="false" />
 
         <receiver android:name="com.rafali.flickruploader.broadcast.MyBroadcastReceiver" >
             <intent-filter>
@@ -121,17 +118,6 @@
             android:label="Auto Upload Folders"
             android:logo="@drawable/preferences"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.paypal.android.sdk.payments.PaymentActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.LoginActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.PaymentMethodActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.PaymentConfirmActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.PayPalFuturePaymentActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.FuturePaymentConsentActivity" />
-        <activity android:name="com.paypal.android.sdk.payments.FuturePaymentInfoActivity" />
-        <activity
-            android:name="io.card.payment.CardIOActivity"
-            android:configChanges="keyboardHidden|orientation" />
-        <activity android:name="io.card.payment.DataEntryActivity" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="fa066bcfcc25c9c78e2157b1bb0718380ac84329" />

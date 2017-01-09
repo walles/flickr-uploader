@@ -1,41 +1,32 @@
 package com.rafali.flickruploader.tool;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.google.common.base.Joiner;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+
+import com.rafali.common.STR;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.AndroidDevice;
+import com.rafali.flickruploader.Config;
+import com.rafali.flickruploader.FlickrUploader;
+import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.enums.CAN_UPLOAD;
+import com.rafali.flickruploader.enums.MEDIA_TYPE;
+import com.rafali.flickruploader.enums.PRIVACY;
+import com.rafali.flickruploader.enums.STATUS;
+import com.rafali.flickruploader.enums.VIEW_GROUP_TYPE;
+import com.rafali.flickruploader.enums.VIEW_SIZE;
+import com.rafali.flickruploader.model.FlickrSet;
+import com.rafali.flickruploader.model.Folder;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
+import com.rafali.flickruploader.ui.activity.FlickrWebAuthActivity_;
+import com.rafali.flickruploader.ui.activity.PreferencesActivity;
+import com.rafali.flickruploader2.R;
 
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
 
-import se.emilsjolander.sprinkles.CursorList;
-import se.emilsjolander.sprinkles.ManyQuery;
-import se.emilsjolander.sprinkles.Query;
-import se.emilsjolander.sprinkles.Transaction;
-import uk.co.senab.bitmapcache.BitmapLruCache;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -71,44 +62,40 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.paypal.android.sdk.payments.PayPalConfiguration;
-import com.paypal.android.sdk.payments.PayPalPayment;
-import com.paypal.android.sdk.payments.PayPalService;
-import com.paypal.android.sdk.payments.PaymentActivity;
-import com.paypal.android.sdk.payments.PaymentConfirmation;
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.AndroidDevice;
-import com.rafali.flickruploader.Config;
-import com.rafali.flickruploader.FlickrUploader;
-import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.billing.IabException;
-import com.rafali.flickruploader.billing.IabHelper;
-import com.rafali.flickruploader.billing.IabHelper.OnIabPurchaseFinishedListener;
-import com.rafali.flickruploader.billing.IabResult;
-import com.rafali.flickruploader.billing.Inventory;
-import com.rafali.flickruploader.billing.Purchase;
-import com.rafali.flickruploader.enums.CAN_UPLOAD;
-import com.rafali.flickruploader.enums.MEDIA_TYPE;
-import com.rafali.flickruploader.enums.PRIVACY;
-import com.rafali.flickruploader.enums.STATUS;
-import com.rafali.flickruploader.enums.VIEW_GROUP_TYPE;
-import com.rafali.flickruploader.enums.VIEW_SIZE;
-import com.rafali.flickruploader.model.FlickrSet;
-import com.rafali.flickruploader.model.Folder;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
-import com.rafali.flickruploader.ui.activity.FlickrWebAuthActivity_;
-import com.rafali.flickruploader.ui.activity.PreferencesActivity;
-import com.rafali.flickruploader2.R;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import se.emilsjolander.sprinkles.CursorList;
+import se.emilsjolander.sprinkles.ManyQuery;
+import se.emilsjolander.sprinkles.Query;
+import se.emilsjolander.sprinkles.Transaction;
+import uk.co.senab.bitmapcache.BitmapLruCache;
 
 public final class Utils {
 
@@ -335,29 +322,6 @@ public final class Utils {
 	}
 
 	private static String email;
-
-	public static String getEmail() {
-		if (email == null) {
-			email = getStringProperty(STR.email);
-			if (email == null) {
-				AccountManager accountManager = AccountManager.get(FlickrUploader.getAppContext());
-				final Account[] accounts = accountManager.getAccountsByType("com.google");
-				for (Account account : accounts) {
-					if (account.name != null) {
-						String name = account.name.toLowerCase(Locale.ENGLISH).trim();
-						if (account.name.matches(ToolString.REGEX_EMAIL)) {
-							email = name;
-						}
-					}
-				}
-				if (email == null) {
-					email = getDeviceId() + "@fake.com";
-				}
-				setStringProperty(STR.email, email);
-			}
-		}
-		return email;
-	}
 
 	private static String deviceId;
 
@@ -614,7 +578,7 @@ public final class Utils {
 	static final String[] proj = { FileColumns._ID, FileColumns.DATA, FileColumns.MEDIA_TYPE, FileColumns.DATE_ADDED, FileColumns.SIZE, Images.Media.DATE_TAKEN };
 
 	static long lastCached = 0;
-	static List<Media> cachedMedias = new ArrayList<Media>();
+	final static List<Media> cachedMedias = new ArrayList<Media>();
 
 	public static List<Media> loadMedia(boolean sync) {
 		boolean empty = true;
@@ -789,13 +753,6 @@ public final class Utils {
 	public static String canAutoUpload() {
 		if (!Utils.isAutoUpload()) {
 			return "Autoupload disabled";
-		}
-		if (!Utils.isPremium() && !Utils.isTrial()) {
-			Notifications.notifyTrialEnded();
-			return "Trial has ended";
-		}
-		if (!FlickrApi.isAuthentified()) {
-			return "Flickr not authentified yet";
 		}
 		return "true";
 	}
@@ -1031,7 +988,7 @@ public final class Utils {
 	 * Calculate an inSampleSize for use in a {@link BitmapFactory.Options} object when decoding bitmaps using the decode* methods from {@link BitmapFactory}. This implementation calculates the
 	 * closest inSampleSize that will result in the final decoded bitmap having a width and height equal to or larger than the requested width and height. This implementation does not ensure a power
 	 * of 2 is returned for inSampleSize which can be faster when decoding but results in a larger bitmap which isn't as useful for caching purposes.
-	 * 
+	 *
 	 * @param options
 	 *            An options object with out* params already populated (run through a decode* method with inJustDecodeBounds==true
 	 * @param reqWidth
@@ -1119,21 +1076,6 @@ public final class Utils {
 	};
 
 	private static boolean charging = false;
-
-	public static final void sendMail(final String subject, final String bodyHtml) {
-		BackgroundExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					String admin = FlickrUploader.getAppContext().getString(R.string.admin_email);
-					RPC.getRpcService().sendEmail(admin, subject, bodyHtml, admin);
-				} catch (Throwable e) {
-					LOG.error(ToolString.stack2string(e));
-
-				}
-			}
-		});
-	}
 
 	public static AndroidDevice createAndroidDevice() {
 		AndroidDevice androidDevice = new AndroidDevice(getDeviceId(), getAccountEmails(), Locale.getDefault().getLanguage(), Build.VERSION.SDK_INT);
@@ -1314,7 +1256,7 @@ public final class Utils {
 									bW.write("date install : "
 											+ new Date(FlickrUploader.getAppContext().getPackageManager().getPackageInfo(FlickrUploader.getAppContext().getPackageName(), 0).firstInstallTime));
 									bW.newLine();
-									bW.write("premium : " + isPremium());
+									bW.write("premium : " + true);
 									bW.newLine();
 								} catch (Throwable e) {
 									String stack2string = ToolString.stack2string(e);
@@ -1384,41 +1326,6 @@ public final class Utils {
 			}
 		});
 		builder.create().show();
-	}
-
-	public static void showPremiumDialog(final Activity activity, final Callback<Boolean> callback) {
-		View view = View.inflate(activity, R.layout.premium_dialog, null);
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		TextView description = (TextView) view.findViewById(R.id.description);
-		if (Utils.isTrial()) {
-			description.setText("This app can be used for free during 7 days. After " + new SimpleDateFormat("dd MMMM", Locale.US).format(new Date(Utils.trialUntil()))
-					+ ", a one time payment will be required to get the PRO version and continue to use the app.");
-		} else {
-			description.setText("The 7-day trial of this app is now over. A one time payment is required to get the PRO version and continue to use the app.");
-		}
-
-		builder.setView(view);
-		final RadioButton googleRadio = (RadioButton) view.findViewById(R.id.radio_google);
-
-		builder.setNegativeButton("Later", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				LOG.debug("premium for later then");
-			}
-		}).setPositiveButton("Buy PRO Now", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				if (googleRadio.isChecked()) {
-					startGooglePayment(activity, callback);
-				} else {
-					startPaypalPayment(activity, callback);
-				}
-			}
-		});
-
-		AlertDialog dialog = builder.create();
-		dialog.setCanceledOnTouchOutside(false);
-		dialog.show();
 	}
 
 	public static void showHelpDialog(final Activity activity) {
@@ -1498,232 +1405,7 @@ public final class Utils {
 		});
 	}
 
-	private static final String CONFIG_ENVIRONMENT = PayPalConfiguration.ENVIRONMENT_PRODUCTION;
-	private static final String CONFIG_CLIENT_ID = Utils.getString(R.string.paypal_client_id);
-	private static final int PAYPAL_REQUEST_CODE_PAYMENT = 111000;
-
-	private static PayPalConfiguration config = new PayPalConfiguration().environment(CONFIG_ENVIRONMENT).clientId(CONFIG_CLIENT_ID);
-	private static Activity paypalActivity;
-	private static Callback<Boolean> paypalCallback;
-
-	public static void startPaypalPayment(final Activity activity, final Callback<Boolean> callback) {
-		Utils.paypalActivity = activity;
-		Utils.paypalCallback = callback;
-		String paypal_result_confirmation = Utils.getStringProperty("paypal_result_confirmation");
-		if (ToolString.isNotBlank(paypal_result_confirmation)) {
-			validatePaypalPayment(paypal_result_confirmation);
-		} else {
-			{
-				Intent intent = new Intent(activity, PayPalService.class);
-				intent.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
-				activity.startService(intent);
-			}
-			PayPalPayment thingToBuy = new PayPalPayment(new BigDecimal("4.99"), "USD", "Flickr Uploader License", PayPalPayment.PAYMENT_INTENT_SALE);
-			Intent intent = new Intent(activity, PaymentActivity.class);
-			intent.putExtra(PaymentActivity.EXTRA_PAYMENT, thingToBuy);
-			activity.startActivityForResult(intent, PAYPAL_REQUEST_CODE_PAYMENT);
-		}
-	}
-
-	static void validatePaypalPayment(final String paypal_result_confirmation) {
-		BackgroundExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				if (ToolString.isNotBlank(paypal_result_confirmation) && paypalActivity != null && paypalCallback != null) {
-					toast("Processing payment");
-					Boolean valid = RPC.getRpcService().confirmPaypalPayment(paypal_result_confirmation);
-					if (valid != null && valid) {
-						onPaymentAccepted("Paypal", paypalActivity, paypalCallback);
-					} else {
-						paypalCallback.onResult(false);
-					}
-				}
-				paypalCallback = null;
-				paypalActivity = null;
-			}
-		});
-	}
-
-	public static boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-		boolean consumed = false;
-		if (requestCode == PAYPAL_REQUEST_CODE_PAYMENT) {
-			consumed = true;
-			if (resultCode == Activity.RESULT_OK) {
-				PaymentConfirmation confirm = data.getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
-				if (confirm != null) {
-					String paypal_result_confirmation = confirm.toJSONObject().toString();
-					LOG.info(paypal_result_confirmation);
-					Utils.setStringProperty("paypal_result_confirmation", paypal_result_confirmation);
-					validatePaypalPayment(paypal_result_confirmation);
-					// TODO: send 'confirm' to your server for verification
-					// or consent
-					// completion.
-					// see
-					// https://developer.paypal.com/webapps/developer/docs/integration/mobile/verify-mobile-payment/
-					// for more details.
-				}
-			} else if (resultCode == Activity.RESULT_CANCELED) {
-				LOG.info("The user canceled.");
-			} else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID) {
-				LOG.warn("An invalid Payment was submitted. Please see the docs.");
-			}
-		} else if (IabHelper.get(false) != null && IabHelper.get(false).handleActivityResult(requestCode, resultCode, data)) {
-			consumed = true;
-		}
-		return consumed;
-	}
-
-	private static void onPaymentAccepted(String method, final Activity activity, final Callback<Boolean> callback) {
-		try {
-			setPremium(true, true, true);
-			activity.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					callback.onResult(true);
-				}
-			});
-			thankYou(activity);
-
-			long firstInstallTime = FlickrUploader.getAppContext().getPackageManager().getPackageInfo(FlickrUploader.getAppContext().getPackageName(), 0).firstInstallTime;
-			long timeSinceInstall = System.currentTimeMillis() - firstInstallTime;
-
-			Utils.sendMail("[FlickrUploader] PremiumSuccess " + method + " - " + ToolString.formatDuration(timeSinceInstall) + " - " + getCountryCode(), Utils.getDeviceId() + " - " + Utils.getEmail()
-					+ " - " + Utils.getStringProperty(STR.userId) + " - " + Utils.getStringProperty(STR.userName));
-		} catch (Throwable e) {
-			LOG.error(ToolString.stack2string(e));
-		}
-	}
-
-	public static void startGooglePayment(final Activity activity, final Callback<Boolean> callback) {
-		final OnIabPurchaseFinishedListener mPurchaseFinishedListener = new OnIabPurchaseFinishedListener() {
-			@Override
-			public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-				try {
-					LOG.debug("result : " + result + ", purchase:" + purchase);
-					if (result.isFailure()) {
-						if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
-							showCouponInfoDialog(activity);
-						} else {
-						}
-						callback.onResult(false);
-					} else {
-						onPaymentAccepted("Google", activity, callback);
-					}
-				} catch (Throwable e) {
-					LOG.error(ToolString.stack2string(e));
-				}
-			}
-
-		};
-		// enable debug logging (for a production application, you should set
-		// this to false).
-		IabHelper.get().enableDebugLogging(Config.isDebug());
-
-		// Start setup. This is asynchronous and the specified listener
-		// will be called once setup completes.
-		LOG.debug("Starting setup.");
-		IabHelper.get().ensureSetup(new IabHelper.OnIabSetupFinishedListener() {
-			public void onIabSetupFinished(IabResult result) {
-				LOG.debug("Setup finished. : " + result);
-				if (result.isSuccess()) {
-					IabHelper.get().launchPurchaseFlow(activity, getPremiumSku(), 1231, mPurchaseFinishedListener, "");
-				}
-			}
-		});
-	}
-
-	public static String getPremiumSku() {
-		if (Config.isDebug()) {
-			return "android.test.purchased";
-		}
-		if (ToolString.isNotBlank(customSku)) {
-			return customSku;
-		}
-		return "premium.5";
-	}
-
-	public static void setPremium(final boolean notifyServer, final boolean premium, final boolean purchased) {
-		LOG.debug("premium : " + premium);
-		setBooleanProperty(STR.premium, premium);
-		if (notifyServer) {
-			BackgroundExecutor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						RPC.getRpcService().setPremium(premium, purchased, getAccountEmails());
-					} catch (Throwable e) {
-						LOG.error(ToolString.stack2string(e));
-					}
-				}
-			});
-		}
-	}
-
 	public static String customSku;
-
-	public static void checkPremium(final boolean force, final Callback<Boolean> callback) {
-		long lastPremiumCheck = getLongProperty(STR.lastPremiumCheck);
-		LOG.debug("isPremium() : " + isPremium() + ", lastPremiumCheck : " + lastPremiumCheck);
-		// check at least everyday Premium status from server
-		if (!force && isPremium() && System.currentTimeMillis() - lastPremiumCheck < 24 * 60 * 60 * 1000L) {
-			callback.onResult(isPremium());
-		} else {
-			BackgroundExecutor.execute(new Runnable() {
-				@Override
-				public void run() {
-					boolean premium = false;
-					try {
-						try {
-							Object[] checkPremium = RPC.getRpcService().checkPremiumStatus(createAndroidDevice());
-							if (checkPremium != null && checkPremium[0] != null) {
-								premium = (Boolean) checkPremium[0];
-								customSku = (String) checkPremium[1];
-								if (premium) {
-									setPremium(false, premium, (Boolean) checkPremium[2]);
-								}
-								LOG.debug("server premium check: " + Arrays.toString(checkPremium));
-							}
-						} catch (Throwable e) {
-							LOG.error(ToolString.stack2string(e));
-						}
-						if (!premium) {
-							IabHelper.get().ensureSetup(new IabHelper.OnIabSetupFinishedListener() {
-								public void onIabSetupFinished(IabResult result) {
-									try {
-										LOG.debug("Setup finished: " + result);
-										if (result.isSuccess()) {
-											Inventory queryInventory = IabHelper.get().queryInventory(true, Lists.newArrayList(Utils.getPremiumSku()));
-											LOG.debug("queryInventory : " + Utils.getPremiumSku() + " : " + queryInventory.hasPurchase(Utils.getPremiumSku()));
-											for (String sku : Arrays.asList("premium.5", "premium.2.5", "premium.1.25")) {
-												if (queryInventory.hasPurchase(sku)) {
-													LOG.debug("has purchased the app : " + sku);
-													Utils.setPremium(true, true, true);
-													break;
-												}
-											}
-										}
-									} catch (IabException e) {
-										LOG.error(ToolString.stack2string(e));
-									} finally {
-										callback.onResult(isPremium());
-									}
-								}
-							});
-						} else {
-							callback.onResult(isPremium());
-						}
-					} catch (Throwable e) {
-						LOG.error(ToolString.stack2string(e));
-					}
-				}
-			});
-		}
-	}
-
-	public static boolean isPremium() {
-		// return false;
-		return getBooleanProperty(STR.premium, false);
-	}
 
 	public static long trialUntil() {
 		try {

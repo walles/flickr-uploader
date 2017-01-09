@@ -17,8 +17,21 @@ It uses a few open source libraries:
 - [Android-ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator) : displays a nice tab UI above a ViewPager
 - [ACRA](https://github.com/ACRA/acra) : sends crash report to a configurable url
 - [AndroidAnnotation](https://github.com/excilys/androidannotations) : simplifies Android development with annotations to define code scope (UI thread, background thread…)
-- [google-collections](https://code.google.com/p/google-collections/) : simplifies use of lists, maps and multimaps 
+- [google-collections](https://code.google.com/p/google-collections/) : simplifies use of lists, maps and multimaps
 - [Sprinkles](https://github.com/emilsjolander/sprinkles) : simplifies the use of SQLite database on Android
 
 
 Follow me on Twitter: https://twitter.com/rafali
+
+Building
+========
+1. [Get Flickr API credentials](https://www.flickr.com/services/apps/create/apply)
+1. Create `FlickrUploaderAndroid/flickrUploader/src/main/res/values/flickr-api-strings.xml`:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flickr_api_key">...</string>
+    <string name="flickr_api_secret">...</string>
+</resources>
+```
+1. In Android Studio, start the `flickrUploader` launch configuration.

@@ -1,20 +1,5 @@
 package com.rafali.flickruploader.ui;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.EViewGroup;
-import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.ViewById;
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
-import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.api.FlickrApi;
@@ -27,6 +12,22 @@ import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
 import com.rafali.flickruploader.ui.widget.CustomImageView;
 import com.rafali.flickruploader2.R;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EViewGroup;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.LoggerFactory;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.AttributeSet;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
 
 @EViewGroup(R.layout.drawer_handle_view)
 public class DrawerHandleView extends LinearLayout implements UploadProgressListener {
@@ -122,8 +123,6 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 
 					if (!FlickrApi.isAuthentified()) {
 						setMessage("Login into Flickr from the Preferences");
-					} else if (!Utils.isPremium() && !Utils.isTrial()) {
-						setMessage("Trial version as expired");
 					} else if (UploadService.getCurrentlyQueued().size() == 0) {
 						String text = "No media queued";
 						int nbUploaded = UploadService.getRecentlyUploaded().size();

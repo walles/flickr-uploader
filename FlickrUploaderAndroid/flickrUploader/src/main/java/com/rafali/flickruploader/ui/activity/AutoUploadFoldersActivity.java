@@ -1,12 +1,16 @@
 package com.rafali.flickruploader.ui.activity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.google.common.collect.Lists;
+
+import com.rafali.common.STR;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.enums.VIEW_SIZE;
+import com.rafali.flickruploader.model.FlickrSet;
+import com.rafali.flickruploader.model.Folder;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.R;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
@@ -14,10 +18,6 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.LoggerFactory;
 
-import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
-import uk.co.senab.bitmapcache.CacheableImageView;
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -35,16 +35,16 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.common.collect.Lists;
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.enums.VIEW_SIZE;
-import com.rafali.flickruploader.model.FlickrSet;
-import com.rafali.flickruploader.model.Folder;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.R;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
+import uk.co.senab.bitmapcache.CacheableImageView;
 
 @EActivity(R.layout.auto_upload_folders_activity)
 public class AutoUploadFoldersActivity extends AppCompatActivity implements OnItemClickListener {
@@ -162,69 +162,58 @@ public class AutoUploadFoldersActivity extends AppCompatActivity implements OnIt
 
     @Override
     public void onItemClick(final AdapterView<?> arg0, final View convertView, final int arg2, final long arg3) {
-        if (Utils.isPremium() || Utils.isTrial()) {
-            if (convertView.getTag() instanceof Folder) {
-                final Folder folder = (Folder) convertView.getTag();
-                String title = "Auto-upload " + folder.getName() + " to";
-                ArrayList<String> itemsList = Lists.newArrayList(DEFAULT_SET, NEW_SET, EXISTING_SET);
-                if (previousSet != null) {
-                    itemsList.add(PREVIOUS_SET + previousSet);
-                }
-                if (folder.isAutoUploaded()) {
-                    itemsList.add(DISABLE_AUTO_UPLOAD);
-                }
-                final String[] items = itemsList.toArray(new String[0]);
-                new AlertDialog.Builder(this).setTitle(title).setPositiveButton(null, null).setNegativeButton(null, null).setCancelable(true).setItems(items, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String item = items[which];
-                        LOG.debug(item);
-                        if (which <= 2) {
-                            if (item.equals(DEFAULT_SET)) {
-                                setAutoUploaded(folder, STR.instantUpload);
-                            } else if (item.equals(NEW_SET)) {
-                                FlickrUploaderActivity.showNewSetDialog(activity, folder.getName(), new Utils.Callback<String>() {
-                                    @Override
-                                    public void onResult(String result) {
-                                        LOG.debug(result);
-                                        if (ToolString.isNotBlank(result)) {
-                                            setAutoUploaded(folder, result);
-                                        }
-                                    }
-                                });
-                            } else if (item.equals(EXISTING_SET)) {
-                                Utils.showExistingSetDialog(activity, new Utils.Callback<String>() {
-                                    @Override
-                                    public void onResult(String result) {
-                                        previousSet = result;
+        if (convertView.getTag() instanceof Folder) {
+            final Folder folder = (Folder) convertView.getTag();
+            String title = "Auto-upload " + folder.getName() + " to";
+            ArrayList<String> itemsList = Lists.newArrayList(DEFAULT_SET, NEW_SET, EXISTING_SET);
+            if (previousSet != null) {
+                itemsList.add(PREVIOUS_SET + previousSet);
+            }
+            if (folder.isAutoUploaded()) {
+                itemsList.add(DISABLE_AUTO_UPLOAD);
+            }
+            final String[] items = itemsList.toArray(new String[0]);
+            new AlertDialog.Builder(this).setTitle(title).setPositiveButton(null, null).setNegativeButton(null, null).setCancelable(true).setItems(items, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String item = items[which];
+                    LOG.debug(item);
+                    if (which <= 2) {
+                        if (item.equals(DEFAULT_SET)) {
+                            setAutoUploaded(folder, STR.instantUpload);
+                        } else if (item.equals(NEW_SET)) {
+                            FlickrUploaderActivity.showNewSetDialog(activity, folder.getName(), new Utils.Callback<String>() {
+                                @Override
+                                public void onResult(String result) {
+                                    LOG.debug(result);
+                                    if (ToolString.isNotBlank(result)) {
                                         setAutoUploaded(folder, result);
                                     }
-                                }, cachedPhotoSets);
-                            } else {
-                                LOG.error("unknown item:" + item);
-                            }
+                                }
+                            });
+                        } else if (item.equals(EXISTING_SET)) {
+                            Utils.showExistingSetDialog(activity, new Utils.Callback<String>() {
+                                @Override
+                                public void onResult(String result) {
+                                    previousSet = result;
+                                    setAutoUploaded(folder, result);
+                                }
+                            }, cachedPhotoSets);
                         } else {
-                            if (item.equals(DISABLE_AUTO_UPLOAD)) {
-                                setAutoUploaded(folder, null);
-                            } else if (previousSet != null && item.contains(PREVIOUS_SET) && item.contains(previousSet)) {
-                                setAutoUploaded(folder, previousSet);
-                            } else {
-                                LOG.error("unknown item:" + item);
-                            }
+                            LOG.error("unknown item:" + item);
+                        }
+                    } else {
+                        if (item.equals(DISABLE_AUTO_UPLOAD)) {
+                            setAutoUploaded(folder, null);
+                        } else if (previousSet != null && item.contains(PREVIOUS_SET) && item.contains(previousSet)) {
+                            setAutoUploaded(folder, previousSet);
+                        } else {
+                            LOG.error("unknown item:" + item);
                         }
                     }
-
-                }).show();
-            }
-        } else {
-            Utils.showPremiumDialog(activity, new Utils.Callback<Boolean>() {
-                @Override
-                public void onResult(Boolean result) {
-                    if (result) {
-                        onItemClick(arg0, convertView, arg2, arg3);
-                    }
                 }
-            });
+
+            }).show();
         }
     }
 

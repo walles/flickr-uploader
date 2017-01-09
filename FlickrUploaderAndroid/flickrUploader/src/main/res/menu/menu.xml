@@ -119,11 +119,6 @@
         android:title="Menu">
         <menu>
             <item
-                android:id="@+id/trial_info"
-                android:icon="@drawable/payment"
-                rafali:showAsAction="never"
-                android:title="Buy PRO License"/>
-            <item
                 android:id="@+id/faq"
                 android:icon="@drawable/help"
                 rafali:showAsAction="never"

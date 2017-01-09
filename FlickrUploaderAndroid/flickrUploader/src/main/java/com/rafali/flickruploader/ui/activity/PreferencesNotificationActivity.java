@@ -1,17 +1,15 @@
 package com.rafali.flickruploader.ui.activity;
 
+import com.rafali.common.STR;
+import com.rafali.flickruploader2.R;
+
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
-
-import com.rafali.common.STR;
-import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.R;
 
 public class PreferencesNotificationActivity extends AbstractPreferenceActivity implements OnSharedPreferenceChangeListener {
 
@@ -26,10 +24,8 @@ public class PreferencesNotificationActivity extends AbstractPreferenceActivity 
         }
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         addPreferencesFromResource(R.xml.preferences_notification);
-        if (Utils.isPremium()) {
-            Preference end_of_trial = findPreference(STR.end_of_trial);
-            getPreferenceScreen().removePreference(end_of_trial);
-        }
+        Preference end_of_trial = findPreference(STR.end_of_trial);
+        getPreferenceScreen().removePreference(end_of_trial);
     }
 
     @Override
