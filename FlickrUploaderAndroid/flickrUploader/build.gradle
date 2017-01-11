@@ -40,7 +40,10 @@ android {
     defaultConfig {
         applicationId "com.rafali.flickruploader2"
         minSdkVersion 21
-        targetSdkVersion 23
+        // Upping the targetSdkVersion from 22 requires implementing the new-for-API-23 permissions
+        // scheme.
+        //noinspection OldTargetApi
+        targetSdkVersion 22
         versionCode 47
         versionName "3.0"
     }
