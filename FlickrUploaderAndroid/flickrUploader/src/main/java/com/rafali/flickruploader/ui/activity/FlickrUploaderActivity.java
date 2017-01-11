@@ -4,7 +4,6 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.FlickrUploader;
@@ -994,6 +993,11 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
 
     @UiThread
     void renderMenu() {
+        if (menu == null) {
+            LOG.debug("Menu not set yet, not rendering");
+            return;
+        }
+
         switch (Utils.getViewSize()) {
             case small:
                 menu.findItem(R.id.view_size_small).setChecked(true);
