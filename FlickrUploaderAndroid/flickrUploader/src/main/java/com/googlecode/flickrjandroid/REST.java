@@ -3,6 +3,24 @@
  */
 package com.googlecode.flickrjandroid;
 
+import com.googlecode.flickrjandroid.oauth.OAuthUtils;
+import com.googlecode.flickrjandroid.uploader.ImageParameter;
+import com.googlecode.flickrjandroid.uploader.UploaderResponse;
+import com.googlecode.flickrjandroid.util.Base64;
+import com.googlecode.flickrjandroid.util.IOUtilities;
+import com.googlecode.flickrjandroid.util.StringUtilities;
+import com.googlecode.flickrjandroid.util.UrlUtilities;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.service.UploadService;
+import com.rafali.flickruploader2.BuildConfig;
+
+import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -23,28 +41,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.json.JSONException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.googlecode.flickrjandroid.oauth.OAuthUtils;
-import com.googlecode.flickrjandroid.uploader.ImageParameter;
-import com.googlecode.flickrjandroid.uploader.UploaderResponse;
-import com.googlecode.flickrjandroid.util.Base64;
-import com.googlecode.flickrjandroid.util.IOUtilities;
-import com.googlecode.flickrjandroid.util.StringUtilities;
-import com.googlecode.flickrjandroid.util.UrlUtilities;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.Config;
-import com.rafali.flickruploader.HttpClientGAE;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.service.UploadService;
-
 /**
  * Transport implementation using the REST interface.
- * 
+ *
  * @author Anthony Eden
  * @version $Id: REST.java,v 1.26 2009/07/01 22:07:08 x-mago Exp $
  */
@@ -60,7 +59,7 @@ public class REST extends Transport {
 
 	/**
 	 * Construct a new REST transport instance.
-	 * 
+	 *
 	 * @throws ParserConfigurationException
 	 */
 	public REST() throws ParserConfigurationException {
@@ -74,7 +73,7 @@ public class REST extends Transport {
 
 	/**
 	 * Construct a new REST transport instance using the specified host endpoint.
-	 * 
+	 *
 	 * @param host
 	 *            The host endpoint
 	 * @throws ParserConfigurationException
@@ -86,7 +85,7 @@ public class REST extends Transport {
 
 	/**
 	 * Construct a new REST transport instance using the specified host and port endpoint.
-	 * 
+	 *
 	 * @param host
 	 *            The host endpoint
 	 * @param port
@@ -101,7 +100,7 @@ public class REST extends Transport {
 
 	/**
 	 * Set a proxy for REST-requests.
-	 * 
+	 *
 	 * @param proxyHost
 	 * @param proxyPort
 	 */
@@ -113,7 +112,7 @@ public class REST extends Transport {
 
 	/**
 	 * Set a proxy with authentication for REST-requests.
-	 * 
+	 *
 	 * @param proxyHost
 	 * @param proxyPort
 	 * @param username
@@ -128,7 +127,7 @@ public class REST extends Transport {
 
 	/**
 	 * Invoke an HTTP GET request on a remote host. You must close the InputStream after you are done with.
-	 * 
+	 *
 	 * @param path
 	 *            The request path
 	 * @param parameters
@@ -145,7 +144,7 @@ public class REST extends Transport {
 	}
 
 	private InputStream getInputStream(URL url, List<Parameter> parameters) throws IOException {
-		if (Config.isDebug()) {
+		if (BuildConfig.DEBUG) {
 			LOG.info("GET URL: {}", url.toString());
 		}
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -160,7 +159,7 @@ public class REST extends Transport {
 			conn.setRequestProperty("Proxy-Authorization", "Basic " + getProxyCredentials());
 		}
 		conn.connect();
-		if (Config.isDebug()) {
+		if (BuildConfig.DEBUG) {
 			LOG.info("response code : " + conn.getResponseCode());
 		}
 		return conn.getInputStream();
@@ -168,7 +167,7 @@ public class REST extends Transport {
 
 	/**
 	 * Send a GET request to the provided URL with the given parameters, then return the response as a String.
-	 * 
+	 *
 	 * @param path
 	 * @param parameters
 	 * @return the data in String
@@ -177,43 +176,39 @@ public class REST extends Transport {
 	public String getLine(String path, List<Parameter> parameters) throws IOException {
 		URL url = UrlUtilities.buildUrl(getHost(), getPort(), path, parameters);
 		LOG.info("url : " + url);
-		if (Config.isGae()) {
-			return HttpClientGAE.getResponseProxyGET(url);
-		} else {
-			InputStream in = null;
-			BufferedReader rd = null;
-			try {
-				in = getInputStream(url, parameters);
-				rd = new BufferedReader(new InputStreamReader(in, OAuthUtils.ENC));
-				final StringBuffer buf = new StringBuffer();
-				String line;
-				while ((line = rd.readLine()) != null) {
-					buf.append(line);
-				}
+		InputStream in = null;
+		BufferedReader rd = null;
+		try {
+            in = getInputStream(url, parameters);
+            rd = new BufferedReader(new InputStreamReader(in, OAuthUtils.ENC));
+            final StringBuffer buf = new StringBuffer();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                buf.append(line);
+            }
 
-				if (Config.isDebug()) {
-					LOG.info("response : " + buf.toString());
-				}
-				return buf.toString();
-			} catch (IOException e) {
-				LOG.error(e.getMessage());
-				throw e;
-			} finally {
-				IOUtilities.close(in);
-				IOUtilities.close(rd);
-			}
-		}
+            if (BuildConfig.DEBUG) {
+                LOG.info("response : " + buf.toString());
+            }
+            return buf.toString();
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+            throw e;
+        } finally {
+            IOUtilities.close(in);
+            IOUtilities.close(rd);
+        }
 	}
 
 	/**
 	 * <p>
 	 * A helper method for sending a GET request to the provided URL with the given parameters, then return the response as a Map.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Please make sure the response data is a Map before calling this method.
 	 * </p>
-	 * 
+	 *
 	 * @param path
 	 * @param parameters
 	 * @return the data in Map with key value pairs
@@ -356,7 +351,7 @@ public class REST extends Transport {
 			try {
 				URL url = UrlUtilities.buildPostUrl(getHost(), getPort(), path);
 
-				if (Config.isDebug()) {
+				if (BuildConfig.DEBUG) {
 					LOG.debug("Post URL: {}", url.toString());
 				}
 				conn = (HttpURLConnection) url.openConnection();
@@ -480,11 +475,11 @@ public class REST extends Transport {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.gmail.yuyang226.flickr.Transport#sendUpload(java.lang.String, java.util.List)
 	 */
 	public Response sendUpload(final String path, final List<Parameter> parameters, final Media media) throws IOException, FlickrException, SAXException {
-		if (Config.isDebug()) {
+		if (BuildConfig.DEBUG) {
 			LOG.debug("Send Upload Input Params: path '{}'; parameters {}", path, parameters);
 		}
 
@@ -530,81 +525,76 @@ public class REST extends Transport {
 	}
 
 	public String sendPost(String path, List<Parameter> parameters) throws IOException {
-		if (Config.isGae()) {
-			URL url = UrlUtilities.buildUrl(getHost(), getPort(), path, parameters);
-			return HttpClientGAE.getResponseProxyPOST(url);
-		} else {
-			String method = null;
-			int timeout = 0;
-			for (Parameter parameter : parameters) {
-				if (parameter.getName().equalsIgnoreCase("method")) {
-					method = (String) parameter.getValue();
-					if (method.equals("flickr.test.echo")) {
-						timeout = 5000;
-					}
-				} else if (parameter.getName().equalsIgnoreCase("machine_tags") && ((String) parameter.getValue()).contains("file:md5sum")) {
-					timeout = 10000;
-				}
-			}
-			if (Config.isDebug()) {
-				LOG.debug("API " + method + ", timeout=" + timeout);
-				LOG.trace("Send Post Input Params: path '{}'; parameters {}", path, parameters);
-			}
-			HttpURLConnection conn = null;
-			DataOutputStream out = null;
-			String data = null;
-			try {
-				URL url = UrlUtilities.buildPostUrl(getHost(), getPort(), path);
-				if (Config.isDebug()) {
-					LOG.info("Post URL: {}", url.toString());
-				}
-				conn = (HttpURLConnection) url.openConnection();
-				conn.setRequestMethod("POST");
-				String postParam = encodeParameters(parameters);
-				byte[] bytes = postParam.getBytes(UTF8);
-				conn.setRequestProperty("Content-Length", Integer.toString(bytes.length));
-				conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-				conn.addRequestProperty("Cache-Control", "no-cache,max-age=0");
-				conn.addRequestProperty("Pragma", "no-cache");
-				conn.setUseCaches(false);
-				conn.setDoOutput(true);
-				conn.setDoInput(true);
-				if (timeout > 0) {
-					conn.setConnectTimeout(timeout);
-					conn.setReadTimeout(timeout);
-				}
-				conn.connect();
-				out = new DataOutputStream(conn.getOutputStream());
-				out.write(bytes);
-				out.flush();
-				out.close();
+		String method = null;
+		int timeout = 0;
+		for (Parameter parameter : parameters) {
+            if (parameter.getName().equalsIgnoreCase("method")) {
+                method = (String) parameter.getValue();
+                if (method.equals("flickr.test.echo")) {
+                    timeout = 5000;
+                }
+            } else if (parameter.getName().equalsIgnoreCase("machine_tags") && ((String) parameter.getValue()).contains("file:md5sum")) {
+                timeout = 10000;
+            }
+        }
+		if (BuildConfig.DEBUG) {
+            LOG.debug("API " + method + ", timeout=" + timeout);
+            LOG.trace("Send Post Input Params: path '{}'; parameters {}", path, parameters);
+        }
+		HttpURLConnection conn = null;
+		DataOutputStream out = null;
+		String data = null;
+		try {
+            URL url = UrlUtilities.buildPostUrl(getHost(), getPort(), path);
+            if (BuildConfig.DEBUG) {
+                LOG.info("Post URL: {}", url.toString());
+            }
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            String postParam = encodeParameters(parameters);
+            byte[] bytes = postParam.getBytes(UTF8);
+            conn.setRequestProperty("Content-Length", Integer.toString(bytes.length));
+            conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.addRequestProperty("Cache-Control", "no-cache,max-age=0");
+            conn.addRequestProperty("Pragma", "no-cache");
+            conn.setUseCaches(false);
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            if (timeout > 0) {
+                conn.setConnectTimeout(timeout);
+                conn.setReadTimeout(timeout);
+            }
+            conn.connect();
+            out = new DataOutputStream(conn.getOutputStream());
+            out.write(bytes);
+            out.flush();
+            out.close();
 
-				int responseCode = HttpURLConnection.HTTP_OK;
-				try {
-					responseCode = conn.getResponseCode();
-				} catch (IOException e) {
-					LOG.error("Failed to get the POST response code\n" + ToolString.stack2string(e));
-					if (conn.getErrorStream() != null) {
-						responseCode = conn.getResponseCode();
-					}
-				}
-				if ((responseCode != HttpURLConnection.HTTP_OK)) {
-					String errorMessage = readFromStream(conn.getErrorStream());
-					throw new IOException("Connection Failed. Response Code: " + responseCode + ", Response Message: " + conn.getResponseMessage() + ", Error: " + errorMessage);
-				}
+            int responseCode = HttpURLConnection.HTTP_OK;
+            try {
+                responseCode = conn.getResponseCode();
+            } catch (IOException e) {
+                LOG.error("Failed to get the POST response code\n" + ToolString.stack2string(e));
+                if (conn.getErrorStream() != null) {
+                    responseCode = conn.getResponseCode();
+                }
+            }
+            if ((responseCode != HttpURLConnection.HTTP_OK)) {
+                String errorMessage = readFromStream(conn.getErrorStream());
+                throw new IOException("Connection Failed. Response Code: " + responseCode + ", Response Message: " + conn.getResponseMessage() + ", Error: " + errorMessage);
+            }
 
-				String result = readFromStream(conn.getInputStream());
-				data = result.trim();
-				return data;
-			} finally {
-				IOUtilities.close(out);
-				if (conn != null)
-					conn.disconnect();
-				if (Config.isDebug()) {
-					LOG.info("Send Post Result: {}", data);
-				}
-			}
-		}
+            String result = readFromStream(conn.getInputStream());
+            data = result.trim();
+            return data;
+        } finally {
+            IOUtilities.close(out);
+            if (conn != null)
+                conn.disconnect();
+            if (BuildConfig.DEBUG) {
+                LOG.info("Send Post Result: {}", data);
+            }
+        }
 	}
 
 	private String readFromStream(InputStream input) throws IOException {
@@ -625,7 +615,7 @@ public class REST extends Transport {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.gmail.yuyang226.flickr.Transport#post(java.lang.String, java.util.List, boolean)
 	 */
 	@Override
@@ -640,7 +630,7 @@ public class REST extends Transport {
 
 	/**
 	 * Generates Base64-encoded credentials from locally stored username and password.
-	 * 
+	 *
 	 * @return credentials
 	 */
 	public String getProxyCredentials() {

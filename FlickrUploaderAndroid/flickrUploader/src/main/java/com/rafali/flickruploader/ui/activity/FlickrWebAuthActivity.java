@@ -12,11 +12,15 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
+import com.googlecode.flickrjandroid.Flickr;
+import com.googlecode.flickrjandroid.auth.Permission;
+import com.googlecode.flickrjandroid.oauth.OAuth;
+import com.googlecode.flickrjandroid.oauth.OAuthInterface;
+import com.googlecode.flickrjandroid.oauth.OAuthToken;
+import com.googlecode.flickrjandroid.people.User;
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
-import com.rafali.flickruploader.AppInstall;
 import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.tool.RPC;
 import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader2.R;
 
@@ -28,11 +32,19 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+
 @EActivity(R.layout.flickr_web_auth_activity)
 public class FlickrWebAuthActivity extends AppCompatActivity {
 
     public static final int RESULT_CODE_AUTH = 2227;
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FlickrWebAuthActivity.class);
+
+    // The CALLBACK_SCHEME must match the intent-filter in AndroidManifest.xml
+    private static final String CALLBACK_SCHEME = "flickruploader-flickr-oauth";
+    private static final Uri OAUTH_CALLBACK_URI = Uri.parse(CALLBACK_SCHEME + "://oauth");
 
     @ViewById(R.id.progress_container)
     View progressContainer;
@@ -68,19 +80,42 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Authorize with Flickr.
+     *
+     * <p>Inspired by:
+     * https://github.com/yuyang226/FlickrjApi4Android/blob/f4698097ae81c37937f0c4e46c5bad9f81b963e9/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/tasks/OAuthTask.java#L74
+     */
     @Background
     void loadAuthorizationUrl() {
+        LOG.info("Loading authorization URL");
+
         try {
-            Utils.saveAndroidDevice();
-            String url = "http://ra-fa-li.appspot.com/flickr?oauth_redirect=true&device_id=" + Utils.getDeviceId();
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(url));
-            startActivity(i);
-            setLoading("Waiting for browser info…");
-            Utils.setLongProperty(STR.lastBrowserOpenForAuth, System.currentTimeMillis());
+            Flickr f = FlickrApi.get();
+            OAuthToken oauthToken =
+                    f.getOAuthInterface().getRequestToken(OAUTH_CALLBACK_URI.toString());
+            saveOAuthToken(null, null, oauthToken.getOauthToken(), oauthToken.getOauthTokenSecret());
+            URL oauthUrl = f.getOAuthInterface().buildAuthenticationUrl(
+                    Permission.READ, oauthToken);
+            String result = oauthUrl.toString();
+
+            if (result != null && !result.startsWith("error") ) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(result)));
+            } else {
+                throw new IOException(result);
+            }
         } catch (Throwable e) {
             setError(e);
         }
+    }
+
+    private void saveOAuthToken(String userName, String userId, String token, String tokenSecret) {
+        LOG.info("Saving OAuth token: user={} id={} token={} secret={}",
+                userName, userId, token, tokenSecret);
+        Utils.setStringProperty(STR.accessToken, token);
+        Utils.setStringProperty(STR.accessTokenSecret, tokenSecret);
+        Utils.setStringProperty(STR.userId, userId);
+        Utils.setStringProperty(STR.userName, userName);
     }
 
     @Override
@@ -95,8 +130,6 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
         GoogleAnalytics.getInstance(this).reportActivityStart(this);
     }
 
-    boolean paused = false;
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -104,17 +137,9 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        paused = true;
-        super.onPause();
-    }
-
-    @Override
     protected void onResume() {
-        if (paused) {
-            doDataCallback();
-        }
-        paused = false;
+        LOG.info("Resuming");
+        doDataCallback();
         super.onResume();
     }
 
@@ -127,33 +152,132 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
 
     @UiThread
     void setError(Throwable e) {
-        LOG.error(ToolString.stack2string(e));
+        LOG.error("setError", e);
         errorContainer.setVisibility(View.VISIBLE);
         progressContainer.setVisibility(View.GONE);
         errorText.setText("Error: " + (ToolString.isBlank(e.getMessage()) ? e.getClass().getName() : e.getMessage()));
     }
 
+    /**
+     * @see "https://github.com/yuyang226/FlickrjApi4Android/blob/1b672163d89a34f603898e1d3d3bbd2d3fbb9666/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/FlickrjAndroidSampleActivity.java#L164"
+     */
+    private OAuth getOAuthToken() {
+        LOG.info("Getting OAuth token");
+
+        String oauthTokenString = Utils.getStringProperty(STR.accessToken, null);
+        String tokenSecret = Utils.getStringProperty(STR.accessTokenSecret, null);
+        if (oauthTokenString == null && tokenSecret == null) {
+            LOG.warn("No oauth token retrieved");
+            return null;
+        }
+
+        OAuth oauth = new OAuth();
+        String userName = Utils.getStringProperty(STR.userName, null);
+        String userId = Utils.getStringProperty(STR.userId, null);
+        if (userId != null) {
+            User user = new User();
+            user.setUsername(userName);
+            user.setId(userId);
+            oauth.setUser(user);
+        }
+
+        OAuthToken oauthToken = new OAuthToken();
+        oauth.setToken(oauthToken);
+        oauthToken.setOauthToken(oauthTokenString);
+        oauthToken.setOauthTokenSecret(tokenSecret);
+        LOG.debug("Retrieved token from preference store: oauth token={}, and token secret={}", oauthTokenString, tokenSecret);
+        return oauth;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        // See: https://github.com/yuyang226/FlickrjApi4Android/blob/1b672163d89a34f603898e1d3d3bbd2d3fbb9666/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/FlickrjAndroidSampleActivity.java#L91
+        setIntent(intent);
+    }
+
+    /**
+     * @see "https://github.com/yuyang226/FlickrjApi4Android/blob/1b672163d89a34f603898e1d3d3bbd2d3fbb9666/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/FlickrjAndroidSampleActivity.java#L110"
+     */
     @Background
     void doDataCallback() {
-        Utils.clearProperty(STR.lastBrowserOpenForAuth);
-        setLoading("Almost done…");
+        LOG.info("Doing the data callback");
+
         try {
-            AppInstall appInstall = RPC.getRpcService().ensureInstall(Utils.createAndroidDevice());
-            if (ToolString.isBlank(appInstall.getFlickrToken())) {
-                setError(new Exception("app not in sync with server"));
-            } else {
-                Utils.setStringProperty(STR.accessToken, appInstall.getFlickrToken());
-                Utils.setStringProperty(STR.accessTokenSecret, appInstall.getFlickrTokenSecret());
-                Utils.setStringProperty(STR.userId, appInstall.getFlickrUserId());
-                Utils.setStringProperty(STR.userName, appInstall.getFlickrUserName());
-                FlickrApi.reset();
-                FlickrApi.syncMedia();
-                setResult(RESULT_CODE_AUTH);
-                finish();
+            Utils.clearProperty(STR.lastBrowserOpenForAuth);
+            setLoading("Almost done…");
+
+            // Note that the intent has to be set in onNewIntent() first:
+            // https://github.com/yuyang226/FlickrjApi4Android/blob/1b672163d89a34f603898e1d3d3bbd2d3fbb9666/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/FlickrjAndroidSampleActivity.java#L91
+            Intent intent = getIntent();
+
+            String scheme = intent.getScheme();
+            OAuth savedToken = getOAuthToken();
+            if (CALLBACK_SCHEME.equals(scheme) && (savedToken == null || savedToken.getUser() == null)) {
+                Uri uri = intent.getData();
+                String query = uri.getQuery();
+                LOG.debug("Returned Query: {}", query);
+                String[] data = query.split("&");
+                if (data.length == 2) {
+                    String oauthToken = data[0].substring(data[0].indexOf("=") + 1);
+                    String oauthVerifier = data[1]
+                            .substring(data[1].indexOf("=") + 1); //$NON-NLS-1$
+                    LOG.debug("OAuth Token: {}; OAuth Verifier: {}", oauthToken, oauthVerifier);
+
+                    OAuth oauth = getOAuthToken();
+                    LOG.debug("OAuth: {}", oauth);
+                    if (oauth != null && oauth.getToken() != null && oauth.getToken().getOauthTokenSecret() != null) {
+                        // From:
+                        // https://github.com/yuyang226/FlickrjApi4Android/blob/f4698097ae81c37937f0c4e46c5bad9f81b963e9/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/tasks/GetOAuthTokenTask.java#L30
+                        Flickr f = FlickrApi.get();
+                        OAuthInterface oauthApi = f.getOAuthInterface();
+                        OAuth finalOauth = oauthApi.getAccessToken(
+                                oauthToken,
+                                oauth.getToken().getOauthTokenSecret(),
+                                oauthVerifier);
+                        onOauthDone(finalOauth);
+                    }
+                }
             }
         } catch (Throwable e) {
             setError(e);
         }
+    }
+
+    /**
+     * @see "https://github.com/yuyang226/FlickrjApi4Android/blob/1b672163d89a34f603898e1d3d3bbd2d3fbb9666/flickrj-android-sample-android/src/com/gmail/yuyang226/flickrj/sample/android/FlickrjAndroidSampleActivity.java#L137"
+     */
+    private void onOauthDone(OAuth oAuth) {
+        LOG.info("Auth done");
+
+        if (oAuth == null) {
+            setError(new IOException("Authorization failed"));
+            return;
+        }
+
+        User user = oAuth.getUser();
+        OAuthToken token = oAuth.getToken();
+        if (user == null || user.getId() == null || token == null
+                || token.getOauthToken() == null
+                || token.getOauthTokenSecret() == null) {
+            setError(new IOException("Authorization failed"));
+            return;
+        }
+
+        String message = String.format(Locale.US, "Authorization Succeed: user=%s, userId=%s, oauthToken=%s, tokenSecret=%s", //$NON-NLS-1$
+                user.getUsername(), user.getId(), token.getOauthToken(), token.getOauthTokenSecret());
+        LOG.info(message);
+        saveOAuthToken(user.getUsername(), user.getId(), token.getOauthToken(), token.getOauthTokenSecret());
+
+        FlickrApi.reset();
+        FlickrApi.syncMedia();
+        setResult(RESULT_CODE_AUTH);
+
+        // Launch the main app here before finishing, otherwise we just end up back in the browser
+        startActivity(FlickrUploaderActivity_.intent(this).get());
+
+        finish();
     }
 
     @Override

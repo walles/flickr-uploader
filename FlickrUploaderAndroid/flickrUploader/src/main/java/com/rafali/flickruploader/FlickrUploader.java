@@ -13,6 +13,7 @@ import com.rafali.flickruploader.model.FlickrSet;
 import com.rafali.flickruploader.model.Folder;
 import com.rafali.flickruploader.model.Media;
 import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.BuildConfig;
 
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class FlickrUploader extends Application {
             initialMigration.createTable(Folder.class);
             sprinkles.addMigration(initialMigration);
             Sprinkles.getDatabase();
-            if (!Config.isDebug()) {
+            if (!BuildConfig.DEBUG) {
                 Fabric.with(this, new Crashlytics());
             }
         } catch (Throwable e) {
@@ -66,9 +67,8 @@ public class FlickrUploader extends Application {
                 try {
                     initLogs();
                     final long previousVersionCode = Utils.getLongProperty(STR.versionCode);
-                    if (Config.VERSION != previousVersionCode) {
-                        Utils.saveAndroidDevice();
-                        Utils.setLongProperty(STR.versionCode, (long) Config.VERSION);
+                    if (BuildConfig.VERSION_CODE != previousVersionCode) {
+                        Utils.setLongProperty(STR.versionCode, (long) BuildConfig.VERSION_CODE);
                         if (previousVersionCode < 40) {
                             if (FlickrApi.isAuthentified()) {
                                 FlickrApi.syncMedia();
@@ -134,7 +134,7 @@ public class FlickrUploader extends Application {
         rollingPolicy.start();
         fileAppender.start();
 
-        if (Config.isDebug()) {
+        if (BuildConfig.DEBUG) {
             final PatternLayoutEncoder logcatTagPattern = new PatternLayoutEncoder();
             logcatTagPattern.setContext(lc);
             logcatTagPattern.setPattern("%class{0}");
@@ -142,7 +142,7 @@ public class FlickrUploader extends Application {
 
             final PatternLayoutEncoder logcatPattern = new PatternLayoutEncoder();
             logcatPattern.setContext(lc);
-            logcatPattern.setPattern("[%thread] %method:%L > %msg%n");
+            logcatPattern.setPattern("%msg%n");
             logcatPattern.start();
 
             final LogcatAppender logcatAppender = new LogcatAppender();

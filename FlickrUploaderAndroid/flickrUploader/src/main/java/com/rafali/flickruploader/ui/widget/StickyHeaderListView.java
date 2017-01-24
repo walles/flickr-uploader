@@ -1,5 +1,7 @@
 package com.rafali.flickruploader.ui.widget;
 
+import com.rafali.flickruploader2.R;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -157,7 +159,7 @@ public class StickyHeaderListView extends ListView implements AbsListView.OnScro
 			floatingHeaderOffset = 0;
 			for (int i = 0; i < getChildCount(); i++) {
 				View headerView = getChildAt(i);
-				if (headerView.getTag() == Header.class && floatingHeader.getTag(Header.class.hashCode()) != headerView.getTag(Header.class.hashCode())) {
+				if (headerView.getTag() == Header.class && floatingHeader.getTag(R.id.header_tag) != headerView.getTag(R.id.header_tag)) {
 					if (headerView.getTop() <= floatingHeader.getMeasuredHeight()) {
 						floatingHeaderOffset = headerView.getTop() - floatingHeader.getMeasuredHeight();
 					}

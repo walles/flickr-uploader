@@ -4,3 +4,4 @@ local.properties
 .DS_Store
 build
 flickrUploader/flickrUploader.iml
+sprinkles/sprinkles.iml

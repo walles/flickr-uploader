@@ -111,7 +111,16 @@
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Flickr Authentication"
             android:logo="@drawable/upload"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- This scheme must match the CALLBACK_SCHEME in FlickrWebAuthActivity -->
+                <data android:scheme="flickruploader-flickr-oauth" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.rafali.flickruploader.ui.activity.AutoUploadFoldersActivity_"
             android:configChanges="orientation|screenSize|keyboardHidden"

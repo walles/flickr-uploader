@@ -7,7 +7,6 @@ import com.google.common.collect.Multimap;
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.AndroidDevice;
-import com.rafali.flickruploader.Config;
 import com.rafali.flickruploader.FlickrUploader;
 import com.rafali.flickruploader.api.FlickrApi;
 import com.rafali.flickruploader.enums.CAN_UPLOAD;
@@ -22,6 +21,7 @@ import com.rafali.flickruploader.model.Media;
 import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
 import com.rafali.flickruploader.ui.activity.FlickrWebAuthActivity_;
 import com.rafali.flickruploader.ui.activity.PreferencesActivity;
+import com.rafali.flickruploader2.BuildConfig;
 import com.rafali.flickruploader2.R;
 
 import org.androidannotations.api.BackgroundExecutor;
@@ -99,6 +99,8 @@ import uk.co.senab.bitmapcache.BitmapLruCache;
 
 public final class Utils {
 
+	private static final String FULL_VERSION_NAME =
+            BuildConfig.VERSION_NAME + "-" + BuildConfig.VERSION_CODE;
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Utils.class);
 	private static final float textSize = 16.0f;
 	private static BitmapLruCache mCache;
@@ -1079,7 +1081,7 @@ public final class Utils {
 
 	public static AndroidDevice createAndroidDevice() {
 		AndroidDevice androidDevice = new AndroidDevice(getDeviceId(), getAccountEmails(), Locale.getDefault().getLanguage(), Build.VERSION.SDK_INT);
-		androidDevice.setAppVersion(Config.FULL_VERSION_NAME);
+		androidDevice.setAppVersion(FULL_VERSION_NAME);
 		androidDevice.setModelInfo(android.os.Build.MODEL + " - " + android.os.Build.VERSION.RELEASE);
 		androidDevice.setCountryCode(getCountryCode());
 		return androidDevice;
@@ -1106,18 +1108,6 @@ public final class Utils {
 			}
 		}
 		return accountsEmails;
-	}
-
-	public static void saveAndroidDevice() {
-		try {
-			long lastServerDeviceSaved = Utils.getLongProperty(STR.lastServerDeviceSaved);
-			if (lastServerDeviceSaved <= 0 || System.currentTimeMillis() - lastServerDeviceSaved > 5 * 24 * 3600 * 1000L) {
-				RPC.getRpcService().ensureInstall(createAndroidDevice());
-				Utils.setLongProperty(STR.lastServerDeviceSaved, System.currentTimeMillis());
-			}
-		} catch (Throwable e) {
-			LOG.error(ToolString.stack2string(e));
-		}
 	}
 
 	static String countryCode;
@@ -1245,7 +1235,7 @@ public final class Utils {
 								try {
 									bW = new BufferedWriter(new FileWriter(publicLog, true));
 									bW.newLine();
-									bW.write("app version : " + Config.FULL_VERSION_NAME);
+									bW.write("app version : " + FULL_VERSION_NAME);
 									bW.newLine();
 									bW.write("device id : " + getDeviceId());
 									bW.newLine();
@@ -1340,7 +1330,7 @@ public final class Utils {
 		});
 		builder.setPositiveButton("Contact support", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
-				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + Config.VERSION_NAME, "I have read the FAQ and I still have a question:", true);
+				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + BuildConfig.VERSION_NAME, "I have read the FAQ and I still have a question:", true);
 			}
 
 		});

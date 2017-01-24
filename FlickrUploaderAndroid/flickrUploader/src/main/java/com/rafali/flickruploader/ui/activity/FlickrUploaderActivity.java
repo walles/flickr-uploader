@@ -577,8 +577,8 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     }
 
     void renderHeader(View headerView) {
-        if (headerView != null && headerView.getTag(Header.class.hashCode()) instanceof Header) {
-            Header header = (Header) headerView.getTag(Header.class.hashCode());
+        if (headerView != null && headerView.getTag(R.id.header_tag) instanceof Header) {
+            Header header = (Header) headerView.getTag(R.id.header_tag);
             // LOG.debug("rendering : " + header + " on " + headerView);
             TextView count = (TextView) headerView.getTag(R.id.count);
             count.setCompoundDrawablesWithIntrinsicBounds(0, 0, header.selected ? R.drawable.checkbox_on : R.drawable.checkbox_off, 0);
@@ -823,7 +823,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
                 count = (TextView) convertView.getTag(R.id.count);
             }
             Header header = (Header) thumbItems.get(position);
-            convertView.setTag(Header.class.hashCode(), header);
+            convertView.setTag(R.id.header_tag, header);
             count.setTag(header);
             title.setTag(header);
 

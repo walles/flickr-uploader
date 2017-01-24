@@ -1,16 +1,15 @@
 package com.rafali.flickruploader.ui.activity;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
-
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
-import com.rafali.flickruploader.Config;
 import com.rafali.flickruploader.api.FlickrApi;
 import com.rafali.flickruploader.enums.PRIVACY;
 import com.rafali.flickruploader.enums.STATUS;
 import com.rafali.flickruploader.model.Media;
 import com.rafali.flickruploader.service.UploadService;
 import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.BuildConfig;
 import com.rafali.flickruploader2.R;
 
 import org.androidannotations.api.BackgroundExecutor;
@@ -142,7 +141,7 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 		findPreference("feedback").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + Config.VERSION_NAME, "Here are some feedback to improve this app:", true);
+				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + BuildConfig.VERSION_NAME, "Here are some feedback to improve this app:", true);
 				return false;
 			}
 
@@ -270,9 +269,6 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 			login.setTitle("Signed into Flickr");
 			login.setSummary("Click here to sign out " + Utils.getStringProperty(STR.userName));
 		}
-		Preference premium = findPreference(STR.premium);
-		premium.setTitle("You are using the PRO version");
-		premium.setSummary("Thank you!");
 	}
 
 	Handler handler;

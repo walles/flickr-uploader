@@ -1,33 +1,5 @@
 package com.rafali.flickruploader.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
-import se.emilsjolander.sprinkles.Transaction;
-import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.net.ConnectivityManager;
-import android.os.BatteryManager;
-import android.os.Handler;
-import android.os.IBinder;
-import android.provider.MediaStore.Images;
-import android.provider.MediaStore.Video;
-
 import com.googlecode.flickrjandroid.FlickrException;
 import com.googlecode.flickrjandroid.REST;
 import com.rafali.common.STR;
@@ -45,6 +17,35 @@ import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader.tool.Utils.Callback;
 import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
 import com.rafali.flickruploader.ui.activity.PreferencesActivity;
+
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.LoggerFactory;
+
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.net.ConnectivityManager;
+import android.os.BatteryManager;
+import android.os.Handler;
+import android.os.IBinder;
+import android.provider.MediaStore.Images;
+import android.provider.MediaStore.Video;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import se.emilsjolander.sprinkles.Transaction;
 
 public class UploadService extends Service {
 
@@ -368,11 +369,11 @@ public class UploadService extends Service {
 
 							UploadException exc = null;
 							try {
-								LOG.debug("Starting upload : " + mediaCurrentlyUploading);
+								LOG.debug("Starting upload : {}", mediaCurrentlyUploading);
 								mediaCurrentlyUploading.setTimestampUploadStarted(start);
 								FlickrApi.upload(mediaCurrentlyUploading);
 							} catch (UploadException e) {
-								LOG.error(e.toString());
+								LOG.error("Upload failed", e);
 								exc = e;
 							}
 							long time = System.currentTimeMillis() - start;
