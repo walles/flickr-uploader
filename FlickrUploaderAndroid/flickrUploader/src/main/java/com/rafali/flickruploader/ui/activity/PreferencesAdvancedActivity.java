@@ -1,12 +1,5 @@
 package com.rafali.flickruploader.ui.activity;
 
-import com.rafali.flickruploader.FlickrUploader;
-import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.R;
-
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -19,6 +12,13 @@ import android.support.v7.app.ActionBar;
 import android.text.Html;
 import android.view.MenuItem;
 import android.widget.EditText;
+
+import com.rafali.flickruploader.FlickrUploader;
+import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.R;
+
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,26 +37,6 @@ public class PreferencesAdvancedActivity extends AbstractPreferenceActivity impl
         }
         addPreferencesFromResource(R.xml.preferences_advanced);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
-        findPreference("clear_logs").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Utils.showConfirmCancel(PreferencesAdvancedActivity.this, "Delete logs", "Do you confirm deleting all log files?", new Utils.Callback<Boolean>() {
-                    @Override
-                    public void onResult(Boolean result) {
-                        if (result) {
-                            BackgroundExecutor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    FlickrUploader.deleteAllLogs();
-                                    render();
-                                }
-                            });
-                        }
-                    }
-                });
-                return false;
-            }
-        });
 
         findPreference("upload_description").setOnPreferenceClickListener(new PremiumOnclick("upload_description"));
         findPreference("custom_tags").setOnPreferenceClickListener(new PremiumOnclick("custom_tags"));

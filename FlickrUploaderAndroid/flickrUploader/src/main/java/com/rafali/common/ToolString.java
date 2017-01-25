@@ -1,5 +1,7 @@
 package com.rafali.common;
 
+import com.rafali.flickruploader.logging.LoggingUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
@@ -9,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ToolString {
-
 	public static final String REGEX_EMAIL_INSIDE = "[a-zA-Z0-9][\\w\\.-]*[a-zA-Z0-9]@[a-zA-Z0-9][\\w\\.-]*[a-zA-Z0-9]\\.[a-zA-Z][a-zA-Z\\.]*[a-zA-Z]";
 	public static final String REGEX_EMAIL = "^" + REGEX_EMAIL_INSIDE + "$";
 	// public static final String REGEX_PWD = "^[a-zA-Z0-9]([a-zA-Z0-9@#$%^&+=]{5,20})";
@@ -184,37 +185,19 @@ public class ToolString {
 
 	static DecimalFormat decimalFormat;
 
+	@Deprecated
 	public static String stack2string(Throwable e) {
+		LoggingUtils.logException(e);
+
 		try {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
 			return "------\r\n" + sw.toString() + "------\r\n";
 		} catch (Throwable e2) {
 			return "bad stack2string";
 		}
 	}
 
-	public static String stack2stringApp(Throwable e) {
-		try {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			String[] split = sw.toString().split("\n");
-			StringBuffer strb = new StringBuffer();
-			for (String line : split) {
-				if (line.contains("com.rafali")) {
-					strb.append(line + "\n");
-					break;
-				} else {
-					strb.append(line + "\n");
-				}
-			}
-			return strb.toString();
-		} catch (Exception e2) {
-			return "bad stack2string";
-		}
-	}
 	public static String getFileName(String path) {
 		if (path.endsWith("/")) {
 			return getFileName(path.substring(0, path.length() - 1));
