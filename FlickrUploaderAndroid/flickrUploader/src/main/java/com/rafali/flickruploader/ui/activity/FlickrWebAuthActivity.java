@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.googlecode.flickrjandroid.Flickr;
 import com.googlecode.flickrjandroid.auth.Permission;
 import com.googlecode.flickrjandroid.oauth.OAuth;
@@ -126,14 +125,6 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-        GoogleAnalytics.getInstance(this).reportActivityStart(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        GoogleAnalytics.getInstance(this).reportActivityStop(this);
     }
 
     @Override

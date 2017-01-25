@@ -71,10 +71,9 @@ dependencies {
     compile('javax.jdo:jdo2-api:2.3-eb') {
         exclude group: 'javax.transaction'
     }
-    compile 'com.google.android.gms:play-services-analytics:8.1.0'
     compile 'com.github.tony19:logback-android-classic:1.1.1-4'
     compile 'org.slf4j:slf4j-api:1.7.5'
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
         transitive = true;
     }
 }

@@ -1,20 +1,5 @@
 package com.rafali.flickruploader.ui.activity;
 
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.enums.PRIVACY;
-import com.rafali.flickruploader.enums.STATUS;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.service.UploadService;
-import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.BuildConfig;
-import com.rafali.flickruploader2.R;
-
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -32,6 +17,20 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
+
+import com.rafali.common.STR;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.enums.PRIVACY;
+import com.rafali.flickruploader.enums.STATUS;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.service.UploadService;
+import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.BuildConfig;
+import com.rafali.flickruploader2.R;
+
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -193,18 +192,6 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 	protected void onResume() {
 		loadNbSynced();
 		super.onResume();
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-        GoogleAnalytics.getInstance(this).reportActivityStart(this);
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-        GoogleAnalytics.getInstance(this).reportActivityStop(this);
 	}
 
 	@Override
