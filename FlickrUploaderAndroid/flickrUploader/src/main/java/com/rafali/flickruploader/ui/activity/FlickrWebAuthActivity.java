@@ -96,7 +96,7 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
                     f.getOAuthInterface().getRequestToken(OAUTH_CALLBACK_URI.toString());
             saveOAuthToken(null, null, null, oauthToken.getOauthTokenSecret());
             URL oauthUrl = f.getOAuthInterface().buildAuthenticationUrl(
-                    Permission.READ, oauthToken);
+                    Permission.WRITE, oauthToken);
             String result = oauthUrl.toString();
 
             if (result != null && !result.startsWith("error") ) {
