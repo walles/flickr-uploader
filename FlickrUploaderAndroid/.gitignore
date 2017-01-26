@@ -5,3 +5,4 @@ local.properties
 build
 flickrUploader/flickrUploader.iml
 sprinkles/sprinkles.iml
+/flickrUploader/fabric.properties

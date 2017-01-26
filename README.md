@@ -34,4 +34,8 @@ Building
     <string name="flickr_api_secret">...</string>
 </resources>
 ```
+1. Create `FlickrUploaderAndroid/flickrUploader/fabric.properties`
+and put `apiSecret=0` in there. Or [get a proper Crashlytics Build Secret
+key](https://docs.fabric.io/android/fabric/settings/api-keys.html) and use that
+rather than `0`.
 1. In Android Studio, start the `flickrUploader` launch configuration.
