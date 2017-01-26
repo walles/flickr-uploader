@@ -48,6 +48,7 @@ public class EmulatorUtils {
         parts.remove("sdk");
         parts.remove("google");
         parts.remove("x86");
+        parts.remove("64");
         parts.remove("phone");
 
         // If the build identifier contains only the above keywords in some order, then we're
