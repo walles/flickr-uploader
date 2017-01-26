@@ -148,7 +148,9 @@ public class LoggingUtils {
         }
 
         rootLogger.addAppender(fileAppender);
-        rootLogger.addAppender(new CrashlyticsAppender());
+
+        CrashlyticsAppender crashlyticsAppender = new CrashlyticsAppender();
+        crashlyticsAppender.setContext(lc);
+        rootLogger.addAppender(crashlyticsAppender);
     }
 }
-
