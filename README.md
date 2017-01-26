@@ -1,6 +1,10 @@
 Flickr Uploader
 ===============
 
+This is a fork off of <https://github.com/rafali/flickr-uploader>. The
+difference is mostly that this project comes with build instructions and that
+a number of crashes have been fixed. Yes, I asked @rafali before doing this.
+
 The goal of this project is to help Flickr users automatically backup the photos from their Android phone.
 It works like [Google+ Instant Upload](http://support.google.com/plus/answer/2910392?hl=en) or [Dropbox Camera Upload](https://blog.dropbox.com/2012/02/your-photos-simplified-part-1/).
 

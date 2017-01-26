@@ -2,16 +2,22 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url 'https://maven.fabric.io/public' }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
+        // This version is *supposed to* be dynamic according to the Fabric docs
+        //noinspection GradleDynamicVersion
         classpath 'io.fabric.tools:gradle:1.+'
+
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath "org.ajoberstar:gradle-git:1.5.1"
     }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 apply plugin: 'android-apt'
+apply plugin: "org.ajoberstar.grgit"
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -33,19 +39,25 @@ apt {
     }
 }
 
+ext {
+    git = org.ajoberstar.grgit.Grgit.open()
+    gitVersionCode = git.tag.list().size()
+    gitVersionName = "${git.describe()}"
+}
+
 android {
     compileSdkVersion 'Google Inc.:Google APIs:23'
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.rafali.flickruploader2"
+        applicationId "com.gmail.walles.johan.flickruploader2"
         minSdkVersion 21
         // Upping the targetSdkVersion from 22 requires implementing the new-for-API-23 permissions
         // scheme.
         //noinspection OldTargetApi
         targetSdkVersion 22
-        versionCode 47
-        versionName "3.0"
+        versionCode gitVersionCode
+        versionName gitVersionName
     }
 
     buildTypes {
