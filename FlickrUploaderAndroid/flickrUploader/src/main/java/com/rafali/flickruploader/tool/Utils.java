@@ -1,32 +1,5 @@
 package com.rafali.flickruploader.tool;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.AndroidDevice;
-import com.rafali.flickruploader.FlickrUploader;
-import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.enums.CAN_UPLOAD;
-import com.rafali.flickruploader.enums.MEDIA_TYPE;
-import com.rafali.flickruploader.enums.PRIVACY;
-import com.rafali.flickruploader.enums.STATUS;
-import com.rafali.flickruploader.enums.VIEW_GROUP_TYPE;
-import com.rafali.flickruploader.enums.VIEW_SIZE;
-import com.rafali.flickruploader.model.FlickrSet;
-import com.rafali.flickruploader.model.Folder;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
-import com.rafali.flickruploader.ui.activity.FlickrWebAuthActivity_;
-import com.rafali.flickruploader.ui.activity.PreferencesActivity;
-import com.rafali.flickruploader2.BuildConfig;
-import com.rafali.flickruploader2.R;
-
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -64,6 +37,32 @@ import android.view.WindowManager;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import com.rafali.common.STR;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.AndroidDevice;
+import com.rafali.flickruploader.FlickrUploader;
+import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.enums.CAN_UPLOAD;
+import com.rafali.flickruploader.enums.MEDIA_TYPE;
+import com.rafali.flickruploader.enums.PRIVACY;
+import com.rafali.flickruploader.enums.STATUS;
+import com.rafali.flickruploader.enums.VIEW_GROUP_TYPE;
+import com.rafali.flickruploader.enums.VIEW_SIZE;
+import com.rafali.flickruploader.model.FlickrSet;
+import com.rafali.flickruploader.model.Folder;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
+import com.rafali.flickruploader.ui.activity.FlickrWebAuthActivity_;
+import com.rafali.flickruploader.ui.activity.PreferencesActivity;
+import com.rafali.flickruploader2.BuildConfig;
+import com.rafali.flickruploader2.R;
+
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -583,33 +582,40 @@ public final class Utils {
 	final static List<Media> cachedMedias = new ArrayList<Media>();
 
 	public static List<Media> loadMedia(boolean sync) {
-		boolean empty = true;
-		if (!sync) {
+		long t0 = System.currentTimeMillis();
+		try {
+			boolean empty = true;
+			if (!sync) {
+                synchronized (cachedMedias) {
+                    if (cachedMedias.isEmpty()) {
+                        long start = System.currentTimeMillis();
+                        cachedMedias.addAll(Query.all(Media.class).get().asList());
+                        lastCached = System.currentTimeMillis();
+                        LOG.info(cachedMedias.size() + " load from local database done in " + (System.currentTimeMillis() - start) + " ms");
+                        empty = cachedMedias.isEmpty();
+                    } else {
+                        empty = false;
+                    }
+                }
+            }
+			if (sync || empty) {
+                List<Media> syncMedia = syncMediaDatabase();
+                synchronized (cachedMedias) {
+                    cachedMedias.clear();
+                    cachedMedias.addAll(syncMedia);
+                    lastCached = System.currentTimeMillis();
+                }
+                return syncMedia;
+            } else {
+                LOG.debug("returning " + (System.currentTimeMillis() - lastCached) + " ms old cachedMedias");
+            }
 			synchronized (cachedMedias) {
-				if (cachedMedias.isEmpty()) {
-					long start = System.currentTimeMillis();
-					cachedMedias.addAll(Query.all(Media.class).get().asList());
-					lastCached = System.currentTimeMillis();
-					LOG.info(cachedMedias.size() + " load from local database done in " + (System.currentTimeMillis() - start) + " ms");
-					empty = cachedMedias.isEmpty();
-				} else {
-					empty = false;
-				}
-			}
-		}
-		if (sync || empty) {
-			List<Media> syncMedia = syncMediaDatabase();
-			synchronized (cachedMedias) {
-				cachedMedias.clear();
-				cachedMedias.addAll(syncMedia);
-				lastCached = System.currentTimeMillis();
-			}
-			return syncMedia;
-		} else {
-			LOG.debug("returning " + (System.currentTimeMillis() - lastCached) + " ms old cachedMedias");
-		}
-		synchronized (cachedMedias) {
-			return new ArrayList<Media>(cachedMedias);
+                return new ArrayList<Media>(cachedMedias);
+            }
+		} finally {
+			long t1 = System.currentTimeMillis();
+			long dtMillis = t1 - t0;
+			LOG.debug("Medias loaded in {}ms", dtMillis);
 		}
 	}
 

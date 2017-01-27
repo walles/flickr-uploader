@@ -65,7 +65,6 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -118,10 +117,10 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
             List<String> paths = null;
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if (type.startsWith("image/") || type.startsWith("video/")) {
-                    Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                    Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                     String path = Utils.getRealPathFromURI(imageUri);
                     if (path != null) {
-                        paths = Arrays.asList(path);
+                        paths = Collections.singletonList(path);
                     }
                 }
                 finishOnClose = true;
@@ -140,9 +139,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
             }
             if (paths != null && !paths.isEmpty()) {
                 List<Media> medias = Utils.loadMedia(true);
-                Iterator<Media> it = medias.iterator();
-                while (it.hasNext()) {
-                    Media media = it.next();
+                for (Media media : medias) {
                     if (paths.contains(media.getPath())) {
                         selectedMedia.add(media);
                     }
@@ -159,7 +156,16 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     SimpleDateFormat format = new SimpleDateFormat("MMMM, yyyy", Locale.US);
 
     List<Object> thumbItems;
-    List<Media> medias;
+
+    /**
+     * NOTE: You must synchronize on {@link #mediasLock} before accessing this field.
+     */
+    private List<Media> medias;
+
+    /**
+     * Protects accesses to {@link #medias}.
+     */
+    private final Object mediasLock = new Object();
 
     void load() {
         load(false);
@@ -174,39 +180,42 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
             }
         });
 
-        medias = Utils.loadMedia(refresh);
+        synchronized (mediasLock) {
+            medias = Utils.loadMedia(refresh);
 
-        boolean showPhotos = Utils.getShowPhotos();
-        boolean showVideos = Utils.getShowVideos();
-        boolean showUploaded = Utils.getShowUploaded();
-        boolean showNotUploaded = Utils.getShowNotUploaded();
-        Iterator<Media> it = medias.iterator();
-        while (it.hasNext()) {
-            Media media = it.next();
-            if (!showPhotos && media.isPhoto() || !showVideos && media.isVideo()) {
-                it.remove();
-            } else if (!showUploaded && media.isUploaded() || !showNotUploaded && !media.isUploaded()) {
-                it.remove();
-            }
-        }
-
-        if (Utils.getViewGroupType() == VIEW_GROUP_TYPE.date) {
-            Collections.sort(medias, Utils.MEDIA_COMPARATOR);
-        } else {
-            Comparator<Media> folderComparator = new Comparator<Media>() {
-                @Override
-                public int compare(Media arg0, Media arg1) {
-                    int compareTo = arg0.getFolderName().compareTo(arg1.getFolderName());
-                    if (compareTo == 0) {
-                        compareTo = arg0.getFolderPath().compareTo(arg1.getFolderPath());
-                        if (compareTo == 0) {
-                            return Utils.MEDIA_COMPARATOR.compare(arg0, arg1);
-                        }
-                    }
-                    return compareTo;
+            boolean showPhotos = Utils.getShowPhotos();
+            boolean showVideos = Utils.getShowVideos();
+            boolean showUploaded = Utils.getShowUploaded();
+            boolean showNotUploaded = Utils.getShowNotUploaded();
+            Iterator<Media> it = medias.iterator();
+            while (it.hasNext()) {
+                Media media = it.next();
+                if (!showPhotos && media.isPhoto() || !showVideos && media.isVideo()) {
+                    it.remove();
+                } else if (!showUploaded && media.isUploaded()
+                        || !showNotUploaded && !media.isUploaded()) {
+                    it.remove();
                 }
-            };
-            Collections.sort(medias, folderComparator);
+            }
+
+            if (Utils.getViewGroupType() == VIEW_GROUP_TYPE.date) {
+                Collections.sort(medias, Utils.MEDIA_COMPARATOR);
+            } else {
+                Comparator<Media> folderComparator = new Comparator<Media>() {
+                    @Override
+                    public int compare(Media arg0, Media arg1) {
+                        int compareTo = arg0.getFolderName().compareTo(arg1.getFolderName());
+                        if (compareTo == 0) {
+                            compareTo = arg0.getFolderPath().compareTo(arg1.getFolderPath());
+                            if (compareTo == 0) {
+                                return Utils.MEDIA_COMPARATOR.compare(arg0, arg1);
+                            }
+                        }
+                        return compareTo;
+                    }
+                };
+                Collections.sort(medias, folderComparator);
+            }
         }
 
         computeHeaders(true);
@@ -234,7 +243,11 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         Media[] mediaRow = null;
         int currentIndex = 0;
 
-        for (Media media : medias) {// FIXME concurrent modification
+        ArrayList<Media> iteratableMedias;
+        synchronized (mediasLock) {
+            iteratableMedias = new ArrayList<>(medias);
+        }
+        for (Media media : iteratableMedias) {
             Header header;
             if (Utils.getViewGroupType() == VIEW_GROUP_TYPE.date) {
                 String id = format.format(new Date(media.getTimestampCreated()));
@@ -332,7 +345,11 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
             } else {
                 photoAdapter.notifyDataSetChanged();
             }
-            if (medias != null && medias.isEmpty()) {
+            boolean mediasExistsButIsEmpty;
+            synchronized (mediasLock) {
+                mediasExistsButIsEmpty = (medias != null && medias.isEmpty());
+            }
+            if (mediasExistsButIsEmpty) {
                 message.setVisibility(View.VISIBLE);
                 if (Utils.loadMedia(false).isEmpty()) {
                     message.setText("No media found");
@@ -534,6 +551,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         alert.setView(input);
 
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
                 LOG.debug("value : " + value);
@@ -578,7 +596,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         }
     }
 
-    Set<Media> selectedMedia = new HashSet<Media>();
+    private Set<Media> selectedMedia = new HashSet<Media>();
 
     class PhotoAdapter extends BaseAdapter implements HeaderAdapter {
 
@@ -661,9 +679,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
                                     selectedMedia.add(media);
                                     if (!header.selected) {
                                         List<Media> headerMedias = new ArrayList<Media>();
-                                        Iterator<Entry<Media, Header>> it = headerMap.entrySet().iterator();
-                                        while (it.hasNext()) {
-                                            Map.Entry<Media, Header> entry = it.next();
+                                        for (Entry<Media, Header> entry : headerMap.entrySet()) {
                                             if (entry.getValue() == header) {
                                                 headerMedias.add(entry.getKey());
                                             }
@@ -856,7 +872,11 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         if (thumbView != null) {
             renderImageView(thumbView, false);
         }
-        if (medias != null && !medias.contains(media)) {
+        boolean mediasExistsButIsEmpty;
+        synchronized (mediasLock) {
+            mediasExistsButIsEmpty = (medias != null && !medias.contains(media));
+        }
+        if (mediasExistsButIsEmpty) {
             load();
         }
     }
@@ -1063,7 +1083,9 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
                 for (Header header : headers) {
                     header.selected = true;
                 }
-                selectedMedia.addAll(medias);
+                synchronized (mediasLock) {
+                    selectedMedia.addAll(medias);
+                }
                 refresh();
                 break;
             case R.id.select_none:
@@ -1215,7 +1237,11 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
 
     @Override
     public void onRefresh() {
-        if (medias != null) {
+        synchronized (mediasLock) {
+            if (medias == null) {
+                return;
+            }
+
             String root = null;
             for (Media media : medias) {
                 if (root == null) {
@@ -1231,13 +1257,14 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
             }
             if (root != null) {
                 LOG.debug("rescanning " + root);
-                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{root}, null, new OnScanCompletedListener() {
-                    @Override
-                    public void onScanCompleted(String path, Uri uri) {
-                        LOG.debug("file " + path + " was scanned seccessfully: " + uri);
-                        load(true);
-                    }
-                });
+                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{root},
+                        null, new OnScanCompletedListener() {
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                LOG.debug("file " + path + " was scanned seccessfully: " + uri);
+                                load(true);
+                            }
+                        });
             } else {
                 load(true);
             }
