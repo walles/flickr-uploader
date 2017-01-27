@@ -127,9 +127,6 @@
             android:label="Auto Upload Folders"
             android:logo="@drawable/preferences"
             android:windowSoftInputMode="adjustResize" />
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="fa066bcfcc25c9c78e2157b1bb0718380ac84329" />
     </application>
 
 </manifest>

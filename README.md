@@ -19,7 +19,6 @@ It uses a few open source libraries:
 - [flickrj-android](https://code.google.com/p/flickrj-android/) : a modified version of the old java flickr lib optimized for Android and Google App Engine
 - [Android-BitmapCache](https://github.com/chrisbanes/Android-BitmapCache) : takes care of bitmaps caching/recycling for you
 - [Android-ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator) : displays a nice tab UI above a ViewPager
-- [ACRA](https://github.com/ACRA/acra) : sends crash report to a configurable url
 - [AndroidAnnotation](https://github.com/excilys/androidannotations) : simplifies Android development with annotations to define code scope (UI thread, background thread…)
 - [google-collections](https://code.google.com/p/google-collections/) : simplifies use of lists, maps and multimaps
 - [Sprinkles](https://github.com/emilsjolander/sprinkles) : simplifies the use of SQLite database on Android
@@ -39,7 +38,6 @@ Building
 </resources>
 ```
 1. Create `FlickrUploaderAndroid/flickrUploader/fabric.properties`
-and put `apiSecret=0` in there. Or [get a proper Crashlytics Build Secret
-key](https://docs.fabric.io/android/fabric/settings/api-keys.html) and use that
-rather than `0`.
+with one line: "`apiKey=0`" (or follow the [official Crashlytics
+instructions](https://docs.fabric.io/android/fabric/settings/working-in-teams.html#android-projects))
 1. In Android Studio, start the `flickrUploader` launch configuration.
