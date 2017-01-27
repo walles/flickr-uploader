@@ -1,27 +1,5 @@
 package com.rafali.flickruploader.api;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
-
-import se.emilsjolander.sprinkles.CursorList;
-import se.emilsjolander.sprinkles.Query;
-import se.emilsjolander.sprinkles.Transaction;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.googlecode.flickrjandroid.Flickr;
@@ -46,6 +24,28 @@ import com.rafali.flickruploader.service.UploadService.UploadException;
 import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
 import com.rafali.flickruploader2.R;
+
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import se.emilsjolander.sprinkles.CursorList;
+import se.emilsjolander.sprinkles.Query;
+import se.emilsjolander.sprinkles.Transaction;
 
 public class FlickrApi {
 	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FlickrApi.class);
@@ -186,6 +186,10 @@ public class FlickrApi {
 
 								page++;
 							} else {
+								// We check the already-uploaded status in upload() anyway, this is
+								// just a way to pre-warm our cache. Even if it's better if this
+								// completes, we can still handle it if it doesn't.
+								LOG.warn("Last photo list empty, stop fetching photos half way and check the rest at upload time");
 								break;
 							}
 						}

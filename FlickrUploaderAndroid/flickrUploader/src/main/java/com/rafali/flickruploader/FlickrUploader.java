@@ -5,17 +5,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.api.FlickrApi;
 import com.rafali.flickruploader.logging.LoggingUtils;
 import com.rafali.flickruploader.model.FlickrSet;
 import com.rafali.flickruploader.model.Folder;
 import com.rafali.flickruploader.model.Media;
 import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.BuildConfig;
 
-import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -51,25 +46,6 @@ public class FlickrUploader extends Application {
         } catch (Throwable e) {
             Log.e("Flickr Uploader", e.getMessage(), e);
         }
-
-        BackgroundExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final long previousVersionCode = Utils.getLongProperty(STR.versionCode);
-                    if (BuildConfig.VERSION_CODE != previousVersionCode) {
-                        Utils.setLongProperty(STR.versionCode, (long) BuildConfig.VERSION_CODE);
-                        if (previousVersionCode < 40) {
-                            if (FlickrApi.isAuthentified()) {
-                                FlickrApi.syncMedia();
-                            }
-                        }
-                    }
-                } catch (Throwable e) {
-                    LOG.error(ToolString.stack2string(e));
-                }
-            }
-        });
     }
 
     public static Context getAppContext() {
