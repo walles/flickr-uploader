@@ -151,6 +151,7 @@ public class LoggingUtils {
 
         CrashlyticsAppender crashlyticsAppender = new CrashlyticsAppender();
         crashlyticsAppender.setContext(lc);
+        crashlyticsAppender.start();
         rootLogger.addAppender(crashlyticsAppender);
     }
 }
