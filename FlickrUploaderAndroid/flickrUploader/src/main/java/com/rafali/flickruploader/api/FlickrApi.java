@@ -365,22 +365,22 @@ public class FlickrApi {
 				}
 			}
 
-		} catch (Throwable e) {
-			if (e instanceof FlickrException) {
-				FlickrException fe = (FlickrException) e;
-				LOG.warn(fe.getErrorCode() + " : " + fe.getErrorMessage());
-				if ("1".equals(fe.getErrorCode())) {
-					cachedPhotoSets = null;
-				} else if ("98".equals(fe.getErrorCode())) {
-					auth = null;
-					authentified = false;
-				} else if ("5".equals(fe.getErrorCode())) {
-					addUnsupportedExtension(getExtension(media));
-				}
-				throw new UploadException(fe.getErrorCode() + " : " + fe.getErrorMessage(), e);
-			} else {
-				throw new UploadException(e.getMessage(), e);
+		} catch (FlickrException e) {
+			FlickrException fe = (FlickrException) e;
+			LOG.warn(fe.getErrorCode() + " : " + fe.getErrorMessage());
+			if ("1".equals(fe.getErrorCode())) {
+				cachedPhotoSets = null;
+			} else if ("98".equals(fe.getErrorCode())) {
+				auth = null;
+				authentified = false;
+			} else if ("5".equals(fe.getErrorCode())) {
+				addUnsupportedExtension(getExtension(media));
 			}
+			throw new UploadException(fe.getErrorCode() + " : " + fe.getErrorMessage(), e);
+		} catch (UploadException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new UploadException(e.getMessage(), e);
 		}
 	}
 

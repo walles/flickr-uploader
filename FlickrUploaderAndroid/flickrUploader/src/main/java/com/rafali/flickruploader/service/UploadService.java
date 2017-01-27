@@ -1,5 +1,18 @@
 package com.rafali.flickruploader.service;
 
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.net.ConnectivityManager;
+import android.os.BatteryManager;
+import android.os.Handler;
+import android.os.IBinder;
+import android.provider.MediaStore.Images;
+import android.provider.MediaStore.Video;
+
 import com.googlecode.flickrjandroid.FlickrException;
 import com.googlecode.flickrjandroid.REST;
 import com.rafali.common.STR;
@@ -21,19 +34,6 @@ import com.rafali.flickruploader.ui.activity.PreferencesActivity;
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
 
-import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.net.ConnectivityManager;
-import android.os.BatteryManager;
-import android.os.Handler;
-import android.os.IBinder;
-import android.provider.MediaStore.Images;
-import android.provider.MediaStore.Video;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.SocketException;
@@ -53,7 +53,7 @@ public class UploadService extends Service {
 
 	private static final Set<UploadProgressListener> uploadProgressListeners = new HashSet<UploadService.UploadProgressListener>();
 
-	public static interface UploadProgressListener {
+	public interface UploadProgressListener {
 		void onProgress(final Media media);
 
 		void onProcessed(final Media media);
@@ -444,6 +444,17 @@ public class UploadService extends Service {
 			super(message, cause);
 		}
 
+		@Override
+		public String getMessage() {
+			String retryability;
+			if (isRetryable()) {
+				retryability = "retryable";
+			} else {
+				retryability = "not retryable";
+			}
+			return super.getMessage() + " (" + retryability + ")";
+		}
+
 		public boolean isRetryable() {
 			if (retryable != null) {
 				return retryable;
@@ -454,14 +465,32 @@ public class UploadService extends Service {
 
 		private static boolean isRetryable(Throwable e) {
 			if (e == null) {
+				LOG.debug("Not retryable, is null");
 				return false;
-			} else if (e instanceof FlickrException) {
+			}
+
+			if (e instanceof UploadException) {
+				boolean retryable = ((UploadException)e).isRetryable();
+				LOG.debug("UploadException is retryable: {}", retryable);
+				return retryable;
+			}
+
+			if (e instanceof FlickrException) {
+				LOG.debug("Not retryable, is FlickrException");
 				return false;
-			} else if (e instanceof FileNotFoundException) {
+			}
+
+			if (e instanceof FileNotFoundException) {
+				LOG.debug("Not retryable, is FileNotFoundException");
 				return false;
-			} else if (e instanceof RuntimeException && e.getCause() != null) {
+			}
+
+			if (e instanceof RuntimeException && e.getCause() != null) {
+				LOG.debug("Unknown retryability, checking cause...");
 				return isRetryable(e.getCause());
 			}
+
+			LOG.debug("Retryable, exception is: {}", e.getClass());
 			return true;
 		}
 
