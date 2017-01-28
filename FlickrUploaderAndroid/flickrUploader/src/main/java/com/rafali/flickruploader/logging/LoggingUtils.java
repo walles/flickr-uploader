@@ -25,6 +25,7 @@ import android.content.Context;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
+import com.crashlytics.android.answers.LoginEvent;
 import com.rafali.flickruploader2.BuildConfig;
 
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,16 @@ public class LoggingUtils {
         Answers.getInstance().logCustom(event);
     }
 
+    public static void logLogin() {
+        if (!IS_CRASHLYTICS_ENABLED) {
+            return;
+        }
+
+        LoginEvent event = new LoginEvent();
+        event.putCustomAttribute("App Version", BuildConfig.VERSION_NAME); //NON-NLS
+        Answers.getInstance().logLogin(event);
+    }
+
     public static void logException(Throwable t) {
         if (!IS_CRASHLYTICS_ENABLED) {
             return;
@@ -81,6 +92,7 @@ public class LoggingUtils {
     public static void setUpLogging(Context context) {
         if (IS_CRASHLYTICS_ENABLED) {
             Fabric.with(context, new Crashlytics());
+            Fabric.with(context, new Answers());
         }
 
         initLogs(context);

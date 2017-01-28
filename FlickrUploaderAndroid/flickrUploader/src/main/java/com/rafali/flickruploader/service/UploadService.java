@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 
+import com.crashlytics.android.answers.CustomEvent;
 import com.googlecode.flickrjandroid.FlickrException;
 import com.googlecode.flickrjandroid.REST;
 import com.rafali.common.STR;
@@ -23,6 +24,7 @@ import com.rafali.flickruploader.broadcast.AlarmBroadcastReceiver;
 import com.rafali.flickruploader.enums.CAN_UPLOAD;
 import com.rafali.flickruploader.enums.MEDIA_TYPE;
 import com.rafali.flickruploader.enums.STATUS;
+import com.rafali.flickruploader.logging.LoggingUtils;
 import com.rafali.flickruploader.model.Folder;
 import com.rafali.flickruploader.model.Media;
 import com.rafali.flickruploader.tool.Notifications;
@@ -383,6 +385,9 @@ public class UploadService extends Service {
 								lastUpload = System.currentTimeMillis();
 								LOG.debug("Upload success : " + time + "ms " + mediaCurrentlyUploading);
 								mediaCurrentlyUploading.setStatus(STATUS.UPLOADED);
+
+								LoggingUtils.logCustom(
+										new CustomEvent("Upload Finished").putCustomAttribute("Duration ms", time));
 							} else {
 								mediaCurrentlyUploading.setTimestampUploadStarted(0);
 								mediaCurrentlyUploading.setErrorMessage(exc.getMessage());

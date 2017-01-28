@@ -32,7 +32,7 @@ public class FlickrUploader extends Application {
     public void onCreate() {
         super.onCreate();
         FlickrUploader.context = getApplicationContext();
-        LoggingUtils.setUpLogging(context);
+        LoggingUtils.setUpLogging(this);
         getHandler();
 
         try {

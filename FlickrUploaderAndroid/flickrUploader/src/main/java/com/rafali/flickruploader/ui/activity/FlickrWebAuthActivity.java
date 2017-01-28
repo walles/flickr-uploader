@@ -20,6 +20,7 @@ import com.googlecode.flickrjandroid.people.User;
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.logging.LoggingUtils;
 import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader2.R;
 
@@ -260,6 +261,8 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
                 user.getUsername(), user.getId(), token.getOauthToken(), token.getOauthTokenSecret());
         LOG.info(message);
         saveOAuthToken(user.getUsername(), user.getId(), token.getOauthToken(), token.getOauthTokenSecret());
+
+        LoggingUtils.logLogin();
 
         FlickrApi.reset();
         FlickrApi.syncMedia();
