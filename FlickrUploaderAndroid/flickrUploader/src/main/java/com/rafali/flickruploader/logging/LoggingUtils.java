@@ -91,8 +91,7 @@ public class LoggingUtils {
 
     public static void setUpLogging(Context context) {
         if (IS_CRASHLYTICS_ENABLED) {
-            Fabric.with(context, new Crashlytics());
-            Fabric.with(context, new Answers());
+            Fabric.with(context, new Crashlytics(), new Answers());
         }
 
         initLogs(context);
