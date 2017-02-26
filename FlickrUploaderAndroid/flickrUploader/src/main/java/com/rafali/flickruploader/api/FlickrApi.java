@@ -366,17 +366,16 @@ public class FlickrApi {
 			}
 
 		} catch (FlickrException e) {
-			FlickrException fe = (FlickrException) e;
-			LOG.warn(fe.getErrorCode() + " : " + fe.getErrorMessage());
-			if ("1".equals(fe.getErrorCode())) {
+			LOG.warn(e.getErrorCode() + " : " + e.getErrorMessage());
+			if ("1".equals(e.getErrorCode())) {
 				cachedPhotoSets = null;
-			} else if ("98".equals(fe.getErrorCode())) {
+			} else if ("98".equals(e.getErrorCode())) {
 				auth = null;
 				authentified = false;
-			} else if ("5".equals(fe.getErrorCode())) {
+			} else if ("5".equals(e.getErrorCode())) {
 				addUnsupportedExtension(getExtension(media));
 			}
-			throw new UploadException(fe.getErrorCode() + " : " + fe.getErrorMessage(), e);
+			throw new UploadException(e.getErrorCode() + ": " + e.getErrorMessage() + ": " + media.getPath(), e);
 		} catch (UploadException e) {
 			throw e;
 		} catch (Throwable e) {
