@@ -91,7 +91,9 @@ public class LoggingUtils {
 
     public static void setUpLogging(Context context) {
         if (IS_CRASHLYTICS_ENABLED) {
-            Fabric.with(context, new Crashlytics(), new Answers());
+            // Note that Crashlytics implicitly adds Answers as well, and mentioning Answers here
+            // seems to make the Crashlytics reports stop working. /JW-2017feb27
+            Fabric.with(context, new Crashlytics());
         }
 
         initLogs(context);
