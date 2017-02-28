@@ -185,6 +185,9 @@ public class ToolString {
 
 	static DecimalFormat decimalFormat;
 
+	/**
+	 * @deprecated Simply pass the exception as is to your logging framework instead.
+	 */
 	@Deprecated
 	public static String stack2string(Throwable e) {
 		LoggingUtils.logException(e);
@@ -192,7 +195,8 @@ public class ToolString {
 		try {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
-			return "------\r\n" + sw.toString() + "------\r\n";
+			e.printStackTrace(pw);
+			return "------\r\n" + sw + "------\r\n";
 		} catch (Throwable e2) {
 			return "bad stack2string";
 		}
