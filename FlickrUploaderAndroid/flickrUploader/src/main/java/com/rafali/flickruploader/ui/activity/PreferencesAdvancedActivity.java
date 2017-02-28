@@ -91,7 +91,6 @@ public class PreferencesAdvancedActivity extends AbstractPreferenceActivity impl
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        findPreference("clear_logs").setSummary("Files size: " + Utils.formatFileSize(size));
                         String autoupload_delay = autoupload_delay_entries[autoupload_delay_values.indexOf(autoupload_delay_value)];
                         if (autoupload_delay.equalsIgnoreCase("custom")) {
                             findPreference("autoupload_delay").setSummary(autoupload_delay);
