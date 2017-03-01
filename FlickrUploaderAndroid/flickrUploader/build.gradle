@@ -80,9 +80,6 @@ dependencies {
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile files('libs/flickrj-android-cleaned-2.0.6.jar')
     compile 'com.google.guava:guava:18.0'
-    compile('javax.jdo:jdo2-api:2.3-eb') {
-        exclude group: 'javax.transaction'
-    }
     compile 'com.github.tony19:logback-android-classic:1.1.1-4'
     compile 'org.slf4j:slf4j-api:1.7.5'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
