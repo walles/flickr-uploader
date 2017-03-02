@@ -3,4 +3,5 @@
     <issue id="ContentDescription">
         <ignore path="res/layout/folder_grid_thumb.xml" />
     </issue>
+    <issue id="GradleDependency"/>
 </lint>

@@ -1,1 +1,0 @@
-../../../../../../../../FlickrUploaderAndroid/flickrUploader/src/main/java/com/rafali/flickruploader/AppInstall.java
