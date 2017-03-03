@@ -18,10 +18,10 @@
         android:layout_marginLeft="4dp"
         android:layout_toRightOf="@id/image_view"
         android:padding="3dp"
-        android:singleLine="true"
         android:text="@string/lorem_ipsum_small"
         android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:maxLines="1"/>
 
     <TextView
         android:id="@+id/size"
@@ -31,9 +31,9 @@
         android:layout_marginLeft="4dp"
         android:layout_toRightOf="@id/title"
         android:padding="3dp"
-        android:singleLine="true"
         android:textColor="@color/midgray"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:maxLines="1"/>
 
     <TextView
         android:id="@+id/sub_title"

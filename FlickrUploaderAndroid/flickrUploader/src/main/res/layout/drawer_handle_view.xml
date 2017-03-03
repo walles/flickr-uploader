@@ -23,9 +23,9 @@
             android:layout_marginLeft="5dp"
             android:layout_toRightOf="@id/image"
             android:gravity="bottom"
-            android:singleLine="true"
             android:text="@string/lorem_ipsum_small"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:maxLines="1"/>
 
         <TextView
             android:id="@+id/sub_title"
@@ -35,9 +35,9 @@
             android:layout_marginLeft="5dp"
             android:layout_toRightOf="@id/image"
             android:gravity="top"
-            android:singleLine="true"
             android:text="@string/lorem_ipsum_small"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/darker_gray"
+            android:maxLines="1"/>
     </RelativeLayout>
 
     <TextView

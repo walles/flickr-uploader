@@ -3,5 +3,7 @@
     <issue id="ContentDescription">
         <ignore path="res/layout/folder_grid_thumb.xml" />
     </issue>
-    <issue id="GradleDependency"/>
+    <issue id="GradleDependency" severity="ignore"/>
+    <issue id="NewerVersionAvailable" severity="ignore"/>
+    <issue id="HardcodedText" severity="ignore"/>
 </lint>
