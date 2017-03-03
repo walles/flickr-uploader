@@ -8,11 +8,11 @@
         android:id="@+id/count"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:drawablePadding="8dp"
-        android:drawableRight="@drawable/checkbox_off"
+        android:drawableEnd="@drawable/checkbox_off"
         android:gravity="center"
-        android:paddingRight="10dp"
+        android:paddingEnd="10dp"
         android:text="10"
         android:textColor="@color/gray"
         android:textSize="18sp" />
@@ -21,13 +21,13 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@id/count"
-        android:drawableLeft="@drawable/expand_off"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/count"
+        android:drawableStart="@drawable/expand_off"
         android:drawablePadding="4dp"
         android:gravity="center_vertical"
-        android:paddingLeft="6dp"
-        android:paddingRight="20dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="20dp"
         android:text="title"
         android:textColor="@color/litegray"
         android:textSize="18sp"
@@ -37,6 +37,6 @@
         android:id="@+id/expand"
         android:layout_width="60dp"
         android:layout_height="48dp"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

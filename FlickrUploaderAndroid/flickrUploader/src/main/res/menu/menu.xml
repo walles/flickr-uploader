@@ -2,7 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:rafali="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/upload"
         android:icon="@drawable/upload"
         rafali:showAsAction="ifRoom"
         android:title="Upload">
@@ -18,7 +17,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/select"
         android:icon="@drawable/select_all"
         rafali:showAsAction="ifRoom"
         android:title="Select">
@@ -42,7 +40,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/filter"
         android:icon="@drawable/filter"
         rafali:showAsAction="ifRoom"
         android:title="Filter">
@@ -68,7 +65,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/pick_view"
         android:icon="@drawable/grid_small"
         rafali:showAsAction="ifRoom"
         android:title="View">
@@ -78,7 +74,6 @@
                 android:title="View size"/>
 
             <group
-                android:id="@+id/view_size_group"
                 android:checkableBehavior="single" >
                 <item
                     android:id="@+id/view_size_small"
@@ -99,7 +94,6 @@
                 android:title="Group by"/>
 
             <group
-                android:id="@+id/group_by_group"
                 android:checkableBehavior="single" >
                 <item
                     android:id="@+id/group_by_date"
@@ -113,7 +107,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/menu_more"
         android:icon="@drawable/menu_more"
         rafali:showAsAction="ifRoom"
         android:title="Menu">

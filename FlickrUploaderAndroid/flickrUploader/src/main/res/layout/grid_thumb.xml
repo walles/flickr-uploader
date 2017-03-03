@@ -34,9 +34,9 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginBottom="3dp"
-        android:layout_marginLeft="3dp"
+        android:layout_marginStart="3dp"
         android:src="@drawable/uploaded"
         android:visibility="gone" />
 
@@ -45,9 +45,9 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="3dp"
-        android:layout_marginRight="3dp"
+        android:layout_marginEnd="3dp"
         android:src="@drawable/video_thumb_icon"
         android:visibility="gone" />
 

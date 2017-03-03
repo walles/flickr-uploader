@@ -26,6 +26,7 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="Flickr Uploader"
+        android:supportsRtl="false"
         android:theme="@style/CustomTheme" >
         <service android:name="com.rafali.flickruploader.service.UploadService" />
 
