@@ -6,7 +6,10 @@
     <issue id="GradleDependency" severity="ignore"/>
     <issue id="NewerVersionAvailable" severity="ignore"/>
     <issue id="HardcodedText" severity="ignore"/>
+
+    <!-- Maybe re-enable these and fix them properly -->
     <issue id="ClickableViewAccessibility" severity="ignore"/>
+    <issue id="UselessParent" severity="ignore"/>
 
     <!-- Please re-enable these after upgrading to Android Tools version 2.3.0 or higher -->
     <issue id="UnusedIds" severity="ignore"/>
