@@ -1,3 +1,5 @@
+import org.ajoberstar.grgit.Grgit
+
 buildscript {
     repositories {
         mavenCentral()
@@ -40,7 +42,7 @@ apt {
 }
 
 ext {
-    git = org.ajoberstar.grgit.Grgit.open()
+    git = Grgit.open()
     gitVersionCode = git.tag.list().size()
     gitVersionName = "${git.describe()}"
 }
@@ -60,10 +62,22 @@ android {
         versionName gitVersionName
     }
 
+    signingConfigs {
+        release {
+            if (System.console() && System.getenv('CI') != "true") {
+                storeFile file(System.console().readLine("\n\$ Enter keystore path: "))
+                storePassword System.console().readLine("\n\$ Enter keystore password: ")
+                keyAlias System.console().readLine("\n\$ Enter key alias: ")
+                keyPassword System.console().readLine("\n\$ Enter key password: ")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
         }
     }
 
