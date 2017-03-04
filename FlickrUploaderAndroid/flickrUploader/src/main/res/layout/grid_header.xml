@@ -37,6 +37,7 @@
         android:id="@+id/expand"
         android:layout_width="60dp"
         android:layout_height="48dp"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:contentDescription="Expand / contract arrow"/>
 
 </RelativeLayout>

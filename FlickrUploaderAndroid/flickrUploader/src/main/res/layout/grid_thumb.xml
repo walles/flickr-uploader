@@ -17,7 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:src="@drawable/uploaded"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="Upload-in-progress indicator"/>
 
     <ImageView
         android:id="@+id/check_image"
@@ -27,7 +28,8 @@
         android:background="@color/transparentblack50"
         android:scaleType="centerInside"
         android:src="@drawable/checkbox_on"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="Checkmark"/>
 
     <ImageView
         android:id="@+id/uploaded"
@@ -38,7 +40,8 @@
         android:layout_marginBottom="3dp"
         android:layout_marginStart="3dp"
         android:src="@drawable/uploaded"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="Already-uploaded indicator"/>
 
     <ImageView
         android:id="@+id/type"
@@ -49,6 +52,7 @@
         android:layout_marginBottom="3dp"
         android:layout_marginEnd="3dp"
         android:src="@drawable/video_thumb_icon"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="This-is-a-video indicator"/>
 
 </RelativeLayout>
