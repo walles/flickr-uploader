@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
-    <issue id="ContentDescription">
-        <ignore path="res/layout/folder_grid_thumb.xml" />
-    </issue>
+    <!-- These just start failing at random times, re-enable temporarily if you want to know -->
     <issue id="GradleDependency" severity="ignore"/>
     <issue id="NewerVersionAvailable" severity="ignore"/>
+    <issue id="OldTargetApi" severity="ignore"/>
+
+    <!-- Re-enable at i18n-time -->
     <issue id="HardcodedText" severity="ignore"/>
 
     <!-- Workaround for https://github.com/tony19/logback-android/issues/140 -->

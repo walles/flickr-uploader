@@ -1,5 +1,6 @@
 package se.emilsjolander.sprinkles;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -47,8 +48,12 @@ public final class ManyQuery<T extends Model> {
      */
 	public CursorList<T> get() {
 		final SQLiteDatabase db = Sprinkles.getDatabase();
-		final Cursor c = db.rawQuery(sqlQuery, null);
-		return new CursorList<T>(c, resultClass);
+
+        // As the javadoc says, remember to close the returned CursorList, that will close the
+        // cursor as well.
+		@SuppressLint("Recycle") final Cursor c = db.rawQuery(sqlQuery, null);
+		
+        return new CursorList<T>(c, resultClass);
 	}
 
     /**
