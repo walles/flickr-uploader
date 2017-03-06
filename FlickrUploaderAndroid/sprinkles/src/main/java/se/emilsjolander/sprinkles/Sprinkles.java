@@ -1,5 +1,9 @@
 package se.emilsjolander.sprinkles;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,12 +20,12 @@ import se.emilsjolander.sprinkles.typeserializers.IntSerializer;
 import se.emilsjolander.sprinkles.typeserializers.LongSerializer;
 import se.emilsjolander.sprinkles.typeserializers.StringSerializer;
 import se.emilsjolander.sprinkles.typeserializers.TypeSerializer;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
 public class Sprinkles {
 
+    @SuppressLint("StaticFieldLeak")  // FIXME: Fix this properly
     static Sprinkles sInstance;
+
     static SQLiteDatabase sDatabase;
 
     Context mContext;
