@@ -4,18 +4,14 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatDelegate;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * Created by emerix on 24/10/15.
- */
-public class AbstractPreferenceActivity extends PreferenceActivity {
+public abstract class AbstractPreferenceActivity extends PreferenceActivity {
 
     private AppCompatDelegate mDelegate;
 
@@ -36,10 +32,7 @@ public class AbstractPreferenceActivity extends PreferenceActivity {
         return getDelegate().getSupportActionBar();
     }
 
-    public void setSupportActionBar(@Nullable Toolbar toolbar) {
-        getDelegate().setSupportActionBar(toolbar);
-    }
-
+    @NonNull
     @Override
     public MenuInflater getMenuInflater() {
         return getDelegate().getMenuInflater();
@@ -95,6 +88,7 @@ public class AbstractPreferenceActivity extends PreferenceActivity {
         getDelegate().onDestroy();
     }
 
+    @Override
     public void invalidateOptionsMenu() {
         getDelegate().invalidateOptionsMenu();
     }
