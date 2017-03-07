@@ -1145,26 +1145,28 @@ public final class Utils {
 	}
 
 	private static void toast(final String message, final int duration) {
-		if (FlickrUploaderActivity.getInstance() != null) {
-			FlickrUploaderActivity.getInstance().runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					LOG.debug("toast : " + message);
-					View view = View.inflate(FlickrUploaderActivity.getInstance(), R.layout.toast, null);
+        final FlickrUploaderActivity flickrUploaderActivity = FlickrUploaderActivity.getInstance();
+        if (flickrUploaderActivity == null) {
+            LOG.debug("Not toasted : " + message);
+            return;
+        }
 
-					TextView text = (TextView) view.findViewById(R.id.description);
-					text.setText(message);
+        flickrUploaderActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                LOG.debug("toast : " + message);
+                View view = View.inflate(flickrUploaderActivity, R.layout.toast, null);
 
-					Toast toast = new Toast(FlickrUploaderActivity.getInstance());
-					toast.setDuration(duration);
-					toast.setView(view);
-					toast.show();
-				}
-			});
-		} else {
-			LOG.debug("Not toasted : " + message);
-		}
-	}
+                TextView text = (TextView) view.findViewById(R.id.description);
+                text.setText(message);
+
+                Toast toast = new Toast(flickrUploaderActivity);
+                toast.setDuration(duration);
+                toast.setView(view);
+                toast.show();
+            }
+        });
+    }
 
 	public static String getRealPathFromURI(Uri uri) {
 		try (Cursor cursor = FlickrUploader.getAppContext().getContentResolver().query(uri, null, null, null, null)) {

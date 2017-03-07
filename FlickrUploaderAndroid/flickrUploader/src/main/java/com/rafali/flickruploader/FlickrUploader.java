@@ -3,6 +3,7 @@ package com.rafali.flickruploader;
 import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.rafali.flickruploader.logging.LoggingUtils;
@@ -14,6 +15,7 @@ import com.rafali.flickruploader.tool.Utils;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -26,12 +28,12 @@ public class FlickrUploader extends Application {
 
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FlickrUploader.class);
 
-    private static Context context;
+    private static WeakReference<Context> weakContext;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        FlickrUploader.context = getApplicationContext();
+        FlickrUploader.weakContext = new WeakReference<>(getApplicationContext());
         LoggingUtils.setUpLogging(this);
         getHandler();
 
@@ -48,8 +50,9 @@ public class FlickrUploader extends Application {
         }
     }
 
+    @Nullable
     public static Context getAppContext() {
-        return context;
+        return weakContext.get();
     }
 
     private static Handler handler;
@@ -62,7 +65,7 @@ public class FlickrUploader extends Application {
     }
 
     public static String getLogFilePath() {
-        return context.getFilesDir().getPath() + "/logs/flickruploader.log";
+        return getAppContext().getFilesDir().getPath() + "/logs/flickruploader.log";
     }
 
     public static void flushLogs() {
@@ -80,7 +83,7 @@ public class FlickrUploader extends Application {
 
     public static void cleanLogs() {
         try {
-            String path = context.getFilesDir().getPath() + "/logs/old";
+            String path = getAppContext().getFilesDir().getPath() + "/logs/old";
             File folder = new File(path);
             if (folder.exists() && folder.isDirectory()) {
                 File[] listFiles = folder.listFiles();
@@ -102,6 +105,6 @@ public class FlickrUploader extends Application {
 
     public static long getLogSize() {
         flushLogs();
-        return Utils.getFileSize(new File(context.getFilesDir().getPath() + "/logs/"));
+        return Utils.getFileSize(new File(getAppContext().getFilesDir().getPath() + "/logs/"));
     }
 }

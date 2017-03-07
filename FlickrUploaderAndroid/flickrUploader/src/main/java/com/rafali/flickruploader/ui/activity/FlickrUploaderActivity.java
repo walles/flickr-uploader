@@ -13,6 +13,7 @@ import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -63,6 +64,7 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.api.BackgroundExecutor;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,7 +90,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
 
     static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FlickrUploaderActivity.class);
 
-    private static FlickrUploaderActivity instance;
+    private static WeakReference<FlickrUploaderActivity> weakInstance;
     private FlickrUploaderActivity activity = this;
 
     @Override
@@ -100,9 +102,10 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         if (!FlickrApi.isAuthentified()) {
             Utils.confirmSignIn(activity);
         }
+        FlickrUploaderActivity instance = getInstance();
         if (instance != null)
             instance.finish();
-        instance = activity;
+        weakInstance = new WeakReference<>(activity);
         renderMenu();
         handleIntent(getIntent());
     }
@@ -311,16 +314,21 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
         computeHeaders(false);
     }
 
+    @Nullable
     public static FlickrUploaderActivity getInstance() {
-        return instance;
+        if (weakInstance == null) {
+            return null;
+        }
+        return weakInstance.get();
     }
 
     @Override
     protected void onDestroy() {
         LOG.debug("onDestroy");
         super.onDestroy();
+        FlickrUploaderActivity instance = getInstance();
         if (instance == this)
-            instance = null;
+            weakInstance = null;
         destroyed = true;
         UploadService.unregister(drawerHandleView);
         UploadService.unregister(drawerContentView);
@@ -854,12 +862,14 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     }
 
     public static void onLoadProgress(int progress) {
+        FlickrUploaderActivity instance = getInstance();
         if (instance != null) {
             instance.setLoading(progress);
         }
     }
 
     public static void updateStatic(Media media) {
+        FlickrUploaderActivity instance = getInstance();
         if (instance != null) {
             instance.update(media);
         }
@@ -1272,6 +1282,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     }
 
     public static void onNewFiles() {
+        FlickrUploaderActivity instance = getInstance();
         if (instance != null && !instance.isPaused() && instance.swipeContainer != null && !instance.swipeContainer.isRefreshing()) {
             instance.load();
         }
