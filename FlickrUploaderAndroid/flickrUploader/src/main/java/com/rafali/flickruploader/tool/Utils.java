@@ -29,8 +29,6 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Files.FileColumns;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
-import android.provider.Settings.Secure;
-import android.telephony.TelephonyManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
@@ -38,12 +36,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
-import com.rafali.flickruploader.AndroidDevice;
 import com.rafali.flickruploader.FlickrUploader;
 import com.rafali.flickruploader.api.FlickrApi;
 import com.rafali.flickruploader.enums.CAN_UPLOAD;
@@ -75,8 +71,6 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -85,10 +79,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import se.emilsjolander.sprinkles.CursorList;
 import se.emilsjolander.sprinkles.ManyQuery;
@@ -255,38 +245,6 @@ public final class Utils {
 		return show_not_uploaded;
 	}
 
-	public static void dialogPrivacy(final Activity context, final PRIVACY privacy, final Callback<PRIVACY> callback) {
-		context.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-
-				final PRIVACY[] privacies = PRIVACY.values();
-				String[] items = new String[privacies.length];
-				for (int i = 0; i < PRIVACY.values().length; i++) {
-					items[i] = privacies[i].getSimpleName();
-				}
-				int checked = -1;
-				if (privacy != null) {
-					checked = privacy.ordinal();
-				}
-				final PRIVACY[] result = new PRIVACY[1];
-				AlertDialog alertDialog = new AlertDialog.Builder(context).setTitle("Choose privacy").setSingleChoiceItems(items, checked, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						result[0] = privacies[which];
-					}
-				}).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if (privacy != result[0])
-							callback.onResult(result[0]);
-					}
-				}).setNegativeButton("Cancel", null).setCancelable(false).show();
-				setButtonSize(alertDialog);
-			}
-		});
-	}
-
 	static final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(FlickrUploader.getAppContext());
 
 	public static void setStringProperty(String property, String value) {
@@ -322,24 +280,6 @@ public final class Utils {
 		editor.commit();
 	}
 
-	private static String email;
-
-	private static String deviceId;
-
-	public static String getDeviceId() {
-		if (deviceId == null) {
-			deviceId = Secure.getString(FlickrUploader.getAppContext().getContentResolver(), Secure.ANDROID_ID);
-			if (deviceId == null) {
-				deviceId = getStringProperty("deviceId");
-				if (deviceId == null) {
-					deviceId = "fake_" + UUID.randomUUID();
-					setStringProperty("deviceId", deviceId);
-				}
-			}
-		}
-		return deviceId;
-	}
-
 	public static long getLongProperty(String property) {
 		return sp.getLong(property, 0);
 	}
@@ -359,98 +299,9 @@ public final class Utils {
 		editor.commit();
 	}
 
-	public static void setImages(String key, Collection<Media> medias) {
-		try {
-			String serialized;
-			synchronized (medias) {
-				if (medias == null || medias.isEmpty()) {
-					serialized = null;
-				} else {
-					List<Integer> ids = new ArrayList<Integer>();
-					for (Media media : medias) {
-						ids.add(media.getId());
-					}
-					serialized = Joiner.on(",").join(ids);
-				}
-			}
-			LOG.debug("persisting images " + key + " : " + serialized);
-			setStringProperty(key, serialized);
-		} catch (Throwable e) {
-			LOG.error(ToolString.stack2string(e));
-
-		}
-	}
-
-	// public static List<Media> getImages(String key) {
-	// String queueIds = getStringProperty(key);
-	// if (ToolString.isNotBlank(queueIds)) {
-	// String filter = Images.Media._ID + " IN (" + queueIds + ")";
-	// List<Media> images = Utils.loadMedia(filter);
-	// LOG.debug(key + " - queueIds : " + queueIds.split(",").length + ", images:" + images.size());
-	// return images;
-	// }
-	// return null;
-	// }
-
-	// public static List<Media> getImages(Collection<Integer> ids) {
-	// List<Media> images = null;
-	// if (ids != null && !ids.isEmpty()) {
-	// String filter = Images.Media._ID + " IN (" + Joiner.on(",").join(ids) + ")";
-	// images = Utils.loadMedia(filter);
-	// }
-	// return images;
-	// }
-
-	// public static Media getImage(int id) {
-	// String filter = Images.Media._ID + " IN (" + id + ")";
-	// List<Media> images = Utils.loadMedia(filter);
-	// if (!images.isEmpty()) {
-	// return images.get(0);
-	// }
-	// LOG.warn("id " + id + " not found!");
-	// return null;
-	// }
-
-	public static void setMapProperty(String property, Map<String, String> map) {
+	public static void setMapProperty(String property) {
 		Editor editor = sp.edit();
-		if (map == null || map.isEmpty()) {
-			editor.putString(property, null);
-		} else {
-			StringBuilder strb = new StringBuilder();
-			Iterator<String> it = map.keySet().iterator();
-			while (it.hasNext()) {
-				String key = it.next();
-				String value = map.get(key);
-				strb.append(key);
-				strb.append("|=|");
-				strb.append(value);
-				if (it.hasNext())
-					strb.append("|;|");
-			}
-			editor.putString(property, strb.toString());
-		}
-		editor.apply();
-		editor.commit();
-	}
-
-	public static void setMapIntegerProperty(String property, Map<Integer, Integer> map) {
-		Editor editor = sp.edit();
-		if (map == null || map.isEmpty()) {
-			editor.putString(property, null);
-		} else {
-			StringBuilder strb = new StringBuilder();
-			Iterator<Integer> it = map.keySet().iterator();
-			while (it.hasNext()) {
-				Integer key = it.next();
-				Integer value = map.get(key);
-				strb.append(key);
-				strb.append("|=|");
-				strb.append(value);
-				if (it.hasNext())
-					strb.append("|;|");
-			}
-			editor.putString(property, strb.toString());
-		}
+        editor.putString(property, null);
 		editor.apply();
 		editor.commit();
 	}
@@ -465,33 +316,14 @@ public final class Utils {
 	}
 
 	public static Map<String, String> getMapProperty(String property) {
-		return getMapProperty(property, false);
-	}
-
-	public static Map<String, String> getMapProperty(String property, boolean returnNull) {
 		Map<String, String> map = null;
 		String str = sp.getString(property, null);
 		if (str != null) {
-			map = new LinkedHashMap<String, String>();
+			map = new LinkedHashMap<>();
 			String[] entries = str.split("\\|;\\|");
 			for (String entry : entries) {
 				String[] split = entry.split("\\|=\\|");
 				map.put(split[0], split[1]);
-			}
-		} else if (!returnNull) {
-			map = new LinkedHashMap<String, String>();
-		}
-		return map;
-	}
-
-	public static Map<Integer, Integer> getMapIntegerProperty(String property) {
-		Map<Integer, Integer> map = new LinkedHashMap<Integer, Integer>();
-		String str = sp.getString(property, null);
-		if (str != null) {
-			String[] entries = str.split("\\|;\\|");
-			for (String entry : entries) {
-				String[] split = entry.split("\\|=\\|");
-				map.put(Integer.valueOf(split[0]), Integer.valueOf(split[1]));
 			}
 		}
 		return map;
@@ -500,7 +332,7 @@ public final class Utils {
 	public static String SHA1(String text) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
-			byte[] sha1hash = new byte[40];
+			byte[] sha1hash;
 			md.update(text.getBytes("utf-8"), 0, text.length());
 			sha1hash = md.digest();
 			return Utils.convertToHex(sha1hash);
@@ -511,18 +343,19 @@ public final class Utils {
 	}
 
 	static String convertToHex(byte[] data) {
-		StringBuffer buf = new StringBuffer();
-		for (int i = 0; i < data.length; i++) {
-			int halfbyte = (data[i] >>> 4) & 0x0F;
-			int two_halfs = 0;
-			do {
-				if ((0 <= halfbyte) && (halfbyte <= 9))
-					buf.append((char) ('0' + halfbyte));
-				else
-					buf.append((char) ('A' + (halfbyte - 10)));
-				halfbyte = data[i] & 0x0F;
-			} while (two_halfs++ < 1);
-		}
+		StringBuilder buf = new StringBuilder();
+        for (byte aData : data) {
+            int halfbyte = (aData >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9)) {
+                    buf.append((char) ('0' + halfbyte));
+                } else {
+                    buf.append((char) ('A' + (halfbyte - 10)));
+                }
+                halfbyte = aData & 0x0F;
+            } while (two_halfs++ < 1);
+        }
 		return buf.toString();
 	}
 
@@ -555,31 +388,16 @@ public final class Utils {
 		byte[] b = createChecksum(filename);
 		String result = "";
 
-		for (int i = 0; i < b.length; i++) {
-			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
-		}
+        for (byte aB : b) {
+            result += Integer.toString((aB & 0xff) + 0x100, 16).substring(1);
+        }
 		return result;
-	}
-
-	private static ExecutorService queue = Executors.newSingleThreadExecutor();
-
-	public static ExecutorService getQueue() {
-		if (queue == null)
-			queue = Executors.newSingleThreadExecutor();
-		return queue;
-	}
-
-	public static void shutdownQueueNow() {
-		if (queue != null) {
-			queue.shutdownNow();
-			queue = null;
-		}
 	}
 
 	static final String[] proj = { FileColumns._ID, FileColumns.DATA, FileColumns.MEDIA_TYPE, FileColumns.DATE_ADDED, FileColumns.SIZE, Images.Media.DATE_TAKEN };
 
 	static long lastCached = 0;
-	final static List<Media> cachedMedias = new ArrayList<Media>();
+	final static List<Media> cachedMedias = new ArrayList<>();
 
 	public static List<Media> loadMedia(boolean sync) {
 		long t0 = System.currentTimeMillis();
@@ -610,7 +428,7 @@ public final class Utils {
                 LOG.debug("returning " + (System.currentTimeMillis() - lastCached) + " ms old cachedMedias");
             }
 			synchronized (cachedMedias) {
-                return new ArrayList<Media>(cachedMedias);
+                return new ArrayList<>(cachedMedias);
             }
 		} finally {
 			long t1 = System.currentTimeMillis();
@@ -621,7 +439,7 @@ public final class Utils {
 
 	private static synchronized List<Media> syncMediaDatabase() {
 		// Log.i("STACK", ToolString.stack2string(new Exception()));
-		List<Media> syncedMedias = new ArrayList<Media>();
+		List<Media> syncedMedias = new ArrayList<>();
 		long start = System.currentTimeMillis();
 		Cursor cursor = null;
 		Transaction t = new Transaction();
@@ -810,19 +628,6 @@ public final class Utils {
 		public void onResult(E result);
 	}
 
-	public static <T extends Enum<T>> Map<String, T> getMapProperty(String key, Class<T> class1) {
-		Map<String, String> map = getMapProperty(key);
-		Map<String, T> mapE = new HashMap<String, T>();
-		try {
-			for (Entry<String, String> entry : map.entrySet()) {
-				mapE.put(entry.getKey(), Enum.valueOf(class1, entry.getValue()));
-			}
-		} catch (Throwable e) {
-			LOG.warn(e.getMessage(), e);
-		}
-		return mapE;
-	}
-
 	public static Bitmap getBitmap(Media media, VIEW_SIZE view_size) {
 		Bitmap bitmap = null;
 		int retry = 0;
@@ -918,7 +723,7 @@ public final class Utils {
 
 	public static synchronized Map<String, Folder> getFolders(boolean refresh) {
 		CursorList<Folder> persistedFolders = Query.all(Folder.class).get();
-		Map<String, Folder> persistedFoldersMap = new HashMap<String, Folder>();
+		Map<String, Folder> persistedFoldersMap = new HashMap<>();
 
 		nbFolderMonitored = 0;
 		for (Folder folder : persistedFolders) {
@@ -936,13 +741,13 @@ public final class Utils {
 				photoFiles.put(media.getFolderPath(), media);
 			}
 
-			Map<String, String> folderSetNames = Utils.getMapProperty("folderSetNames", true);
+			Map<String, String> folderSetNames = Utils.getMapProperty("folderSetNames");
 
 			Transaction t = new Transaction();
 			try {
 				for (String path : photoFiles.keySet()) {
 					Folder folder = persistedFoldersMap.get(path);
-					List<Media> folderMedias = new ArrayList<Media>(photoFiles.get(path));
+					List<Media> folderMedias = new ArrayList<>(photoFiles.get(path));
 					if (folder == null) {
 						folder = new Folder(path);
 						folder.setExist(false);
@@ -968,28 +773,10 @@ public final class Utils {
 				t.finish();
 			}
 			if (folderSetNames != null) {
-				Utils.setMapProperty("folderSetNames", null);
+				Utils.setMapProperty("folderSetNames");
 			}
 		}
 		return persistedFoldersMap;
-	}
-
-	public static List<String> getStringList(String key) {
-		return getStringList(key, false);
-	}
-
-	public static List<String> getStringList(String key, boolean returnNull) {
-		String photosSeen = sp.getString(key, null);
-		if (photosSeen != null) {
-			return Arrays.asList(photosSeen.split("\\|"));
-		} else if (returnNull) {
-			return null;
-		}
-		return new ArrayList<String>();
-	}
-
-	public static void setStringList(String key, Collection<String> ids) {
-		setStringProperty(key, Joiner.on('|').join(ids));
 	}
 
 	/**
@@ -1045,14 +832,6 @@ public final class Utils {
 		// return scale;
 	}
 
-	public static <T extends Enum<T>> void setEnumMapProperty(String property, Map<String, T> mapE) {
-		Map<String, String> map = new HashMap<String, String>();
-		for (Entry<String, T> entry : mapE.entrySet()) {
-			map.put(entry.getKey(), entry.getValue().toString());
-		}
-		setMapProperty(property, map);
-	}
-
 	public static String getString(int stringId, Object... objects) {
 		return FlickrUploader.getAppContext().getResources().getString(stringId, objects);
 	}
@@ -1085,16 +864,8 @@ public final class Utils {
 
 	private static boolean charging = false;
 
-	public static AndroidDevice createAndroidDevice() {
-		AndroidDevice androidDevice = new AndroidDevice(getDeviceId(), getAccountEmails(), Locale.getDefault().getLanguage(), Build.VERSION.SDK_INT);
-		androidDevice.setAppVersion(FULL_VERSION_NAME);
-		androidDevice.setModelInfo(android.os.Build.MODEL + " - " + android.os.Build.VERSION.RELEASE);
-		androidDevice.setCountryCode(getCountryCode());
-		return androidDevice;
-	}
-
 	public static List<String> getAccountEmails() {
-		List<String> emails = new ArrayList<String>();
+		List<String> emails = new ArrayList<>();
 		for (Account account : getAccountsWithEmail()) {
 			emails.add(account.name);
 		}
@@ -1102,7 +873,7 @@ public final class Utils {
 	}
 
 	public static List<Account> getAccountsWithEmail() {
-		List<Account> accountsEmails = new ArrayList<Account>();
+		List<Account> accountsEmails = new ArrayList<>();
 		AccountManager accountManager = AccountManager.get(FlickrUploader.getAppContext());
 		final Account[] accounts = accountManager.getAccountsByType("com.google");
 		for (Account account : accounts) {
@@ -1114,24 +885,6 @@ public final class Utils {
 			}
 		}
 		return accountsEmails;
-	}
-
-	static String countryCode;
-
-	public static String getCountryCode() {
-		try {
-			if (ToolString.isBlank(countryCode)) {
-				try {
-					TelephonyManager tm = (TelephonyManager) FlickrUploader.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
-					countryCode = tm.getSimCountryIso();
-				} catch (Throwable e) {
-					LOG.warn(e.getClass().getSimpleName() + " : " + e.getMessage());
-				}
-			}
-
-		} catch (Throwable e) {
-		}
-		return countryCode;
 	}
 
 	public static void setCharging(boolean charging) {
@@ -1186,26 +939,6 @@ public final class Utils {
 		return result;
 	}
 
-	static void thankYou(final Activity activity) {
-		activity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-				builder.setMessage("Thank you!\n\nIf you have any suggestion to improve the app, feel free to contact me via the Feedback button in the Preferences. Also, if you have two minutes to spare, please leave a review on the Play Store to let other Flickr users know how cool my app is ;)\n\nMaxime");
-				builder.setPositiveButton("Rate the app", new OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.rafali.flickruploader2")));
-						Utils.setBooleanProperty(STR.hasRated, true);
-					}
-				});
-				builder.setNegativeButton("Later", null);
-				// Create the AlertDialog object and return it
-				builder.create().show();
-			}
-		});
-	}
-
 	public static String getDeviceName() {
 		if (Build.MODEL != null && Build.MODEL.startsWith(Build.MANUFACTURER)) {
 			return Build.MODEL;
@@ -1242,8 +975,6 @@ public final class Utils {
 									bW = new BufferedWriter(new FileWriter(publicLog, true));
 									bW.newLine();
 									bW.write("app version : " + FULL_VERSION_NAME);
-									bW.newLine();
-									bW.write("device id : " + getDeviceId());
 									bW.newLine();
 									bW.write("device name : " + getDeviceName());
 									bW.newLine();
@@ -1301,29 +1032,6 @@ public final class Utils {
 		}
 	}
 
-	public static void showCouponInfoDialog(final Activity activity) {
-		setBooleanProperty(STR.couponInfo, true);
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		builder.setTitle("Coupons available").setMessage("You can get the PRO version for a lower price or even for free if you help advertise it a bit.");
-		builder.setNegativeButton("Later", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				LOG.debug("coupon for later then");
-			}
-		});
-		builder.setPositiveButton("More info", new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				String url = "https://github.com/rafali/flickr-uploader/wiki/Coupons";
-				Intent i = new Intent(Intent.ACTION_VIEW);
-				i.setData(Uri.parse(url));
-				activity.startActivity(i);
-			}
-		});
-		builder.create().show();
-	}
-
 	public static void showHelpDialog(final Activity activity) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		builder.setTitle("Help");
@@ -1375,7 +1083,7 @@ public final class Utils {
 			@Override
 			public void run() {
 				final Map<String, FlickrSet> photosets = cachedPhotosets == null ? FlickrApi.getPhotoSets(true) : cachedPhotosets;
-				final List<String> photosetTitles = new ArrayList<String>(photosets.keySet());
+				final List<String> photosetTitles = new ArrayList<>(photosets.keySet());
 				Collections.sort(photosetTitles, String.CASE_INSENSITIVE_ORDER);
 				activity.runOnUiThread(new Runnable() {
 					@Override
@@ -1401,48 +1109,8 @@ public final class Utils {
 		});
 	}
 
-	public static String customSku;
-
-	public static long trialUntil() {
-		try {
-			long firstInstallTime = FlickrUploader.getAppContext().getPackageManager().getPackageInfo(FlickrUploader.getAppContext().getPackageName(), 0).firstInstallTime;
-			return firstInstallTime + 7 * 24 * 3600 * 1000L;
-		} catch (Throwable e) {
-			LOG.error(ToolString.stack2string(e));
-		}
-		return System.currentTimeMillis() + 7 * 24 * 3600 * 1000L;
-	}
-
-	public static long nbDaysInstalled() {
-		try {
-			long firstInstallTime = FlickrUploader.getAppContext().getPackageManager().getPackageInfo(FlickrUploader.getAppContext().getPackageName(), 0).firstInstallTime;
-			return (System.currentTimeMillis() - firstInstallTime) / (24 * 60 * 60 * 1000L);
-		} catch (Throwable e) {
-			LOG.error(ToolString.stack2string(e));
-		}
-		return 0;
-	}
-
-	public static boolean isTrial() {
-		// return false;
-		return trialUntil() > System.currentTimeMillis();
-	}
-
 	public static String getUploadDescription() {
 		return sp.getString("upload_description", "uploaded with <a href='https://play.google.com/store/apps/details?id=com.rafali.flickruploader2'>Flickr Uploader</a> for Android");
-	}
-
-	public static String formatFileSize(long bytes) {
-		return humanReadableByteCount(bytes, false);
-	}
-
-	private static String humanReadableByteCount(long bytes, boolean si) {
-		int unit = si ? 1000 : 1024;
-		if (bytes < unit)
-			return bytes + " B";
-		int exp = (int) (Math.log(bytes) / Math.log(unit));
-		String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
-		return String.format(Locale.getDefault(), "%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
 
 	public static long getUploadDelayMs() {
@@ -1472,20 +1140,6 @@ public final class Utils {
 		return count;
 	}
 
-	public static void deleteFiles(File file) {
-		if (file.exists()) {
-			if (file.isDirectory()) {
-				for (File child : file.listFiles()) {
-					deleteFiles(child);
-				}
-			}
-			LOG.warn(file + " deleted");
-			file.delete();
-		} else {
-			LOG.warn(file + " already deleted");
-		}
-	}
-
 	public static void toast(final String message) {
 		toast(message, Toast.LENGTH_LONG);
 	}
@@ -1513,10 +1167,10 @@ public final class Utils {
 	}
 
 	public static String getRealPathFromURI(Uri uri) {
-		Cursor cursor = FlickrUploader.getAppContext().getContentResolver().query(uri, null, null, null, null);
-		cursor.moveToFirst();
-		int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-		return cursor.getString(idx);
+		try (Cursor cursor = FlickrUploader.getAppContext().getContentResolver().query(uri, null, null, null, null)) {
+			cursor.moveToFirst();
+			int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+			return cursor.getString(idx);
+		}
 	}
-
 }
