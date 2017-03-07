@@ -16,7 +16,6 @@ package com.rafali.flickruploader.ui.widget;
  * limitations under the License.
  */
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -36,38 +35,40 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.rafali.flickruploader2.R;
 
+import java.lang.ref.WeakReference;
+
 /**
  * SlidingDrawer hides content out of the screen and allows the user to drag a handle to bring the content on screen. SlidingDrawer can be used vertically or horizontally.
- * 
+ *
  * A special widget composed of two children views: the handle, that the users drags, and the content, attached to the handle and dragged with it.
- * 
+ *
  * SlidingDrawer should be used as an overlay inside layouts. This means SlidingDrawer should only be used inside of a FrameLayout or a RelativeLayout for instance. The size of the SlidingDrawer
  * defines how much space the content will occupy once slid out so SlidingDrawer should usually use match_parent for both its dimensions.
- * 
+ *
  * Inside an XML layout, SlidingDrawer must define the id of the handle and of the content:
- * 
+ *
  * <pre class="prettyprint">
  * &lt;SlidingDrawer
  *     android:id="@+id/drawer"
  *     android:layout_width="match_parent"
  *     android:layout_height="match_parent"
- * 
+ *
  *     android:handle="@+id/handle"
  *     android:content="@+id/content"&gt;
- * 
+ *
  *     &lt;ImageView
  *         android:id="@id/handle"
  *         android:layout_width="88dip"
  *         android:layout_height="44dip" /&gt;
- * 
+ *
  *     &lt;GridView
  *         android:id="@id/content"
  *         android:layout_width="match_parent"
  *         android:layout_height="match_parent" /&gt;
- * 
+ *
  * &lt;/SlidingDrawer&gt;
  * </pre>
- * 
+ *
  * @attr ref android.R.styleable#SlidingDrawer_content
  * @attr ref android.R.styleable#SlidingDrawer_handle
  * @attr ref android.R.styleable#SlidingDrawer_topOffset
@@ -75,7 +76,7 @@ import com.rafali.flickruploader2.R;
  * @attr ref android.R.styleable#SlidingDrawer_orientation
  * @attr ref android.R.styleable#SlidingDrawer_allowSingleTap
  * @attr ref android.R.styleable#SlidingDrawer_animateOnClick
- * 
+ *
  */
 public class SlidingDrawer extends ViewGroup {
 
@@ -116,7 +117,7 @@ public class SlidingDrawer extends ViewGroup {
 	private OnDrawerCloseListener mOnDrawerCloseListener;
 	private OnDrawerScrollListener mOnDrawerScrollListener;
 
-	private final Handler mHandler = new SlidingHandler();
+	private final Handler mHandler = new SlidingHandler(this);
 	private float mAnimatedAcceleration;
 	private float mAnimatedVelocity;
 	private float mAnimationPosition;
@@ -170,7 +171,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Creates a new SlidingDrawer from a specified set of attributes defined in XML.
-	 * 
+	 *
 	 * @param context
 	 *            The application's environment.
 	 * @param attrs
@@ -182,7 +183,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Creates a new SlidingDrawer from a specified set of attributes defined in XML.
-	 * 
+	 *
 	 * @param context
 	 *            The application's environment.
 	 * @param attrs
@@ -231,6 +232,8 @@ public class SlidingDrawer extends ViewGroup {
 
 	@Override
 	protected void onFinishInflate() {
+		super.onFinishInflate();
+
 		mHandle = findViewById(mHandleId);
 		if (mHandle == null) {
 			throw new IllegalArgumentException("The handle attribute is must refer to an" + " existing child.");
@@ -608,7 +611,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Toggles the drawer open and close. Takes effect immediately.
-	 * 
+	 *
 	 * @see #open()
 	 * @see #close()
 	 * @see #animateClose()
@@ -627,7 +630,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Toggles the drawer open and close with an animation.
-	 * 
+	 *
 	 * @see #open()
 	 * @see #close()
 	 * @see #animateClose()
@@ -644,7 +647,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Opens the drawer immediately.
-	 * 
+	 *
 	 * @see #toggle()
 	 * @see #close()
 	 * @see #animateOpen()
@@ -666,7 +669,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Closes the drawer immediately.
-	 * 
+	 *
 	 * @see #toggle()
 	 * @see #open()
 	 * @see #animateClose()
@@ -679,7 +682,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Closes the drawer with an animation.
-	 * 
+	 *
 	 * @see #close()
 	 * @see #open()
 	 * @see #animateOpen()
@@ -701,7 +704,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Opens the drawer with an animation.
-	 * 
+	 *
 	 * @see #close()
 	 * @see #open()
 	 * @see #animateClose()
@@ -767,7 +770,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Sets the listener that receives a notification when the drawer becomes open.
-	 * 
+	 *
 	 * @param onDrawerOpenListener
 	 *            The listener to be notified when the drawer is opened.
 	 */
@@ -777,7 +780,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Sets the listener that receives a notification when the drawer becomes close.
-	 * 
+	 *
 	 * @param onDrawerCloseListener
 	 *            The listener to be notified when the drawer is closed.
 	 */
@@ -787,7 +790,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Sets the listener that receives a notification when the drawer starts or ends a scroll. A fling is considered as a scroll. A fling will also trigger a drawer opened or drawer closed event.
-	 * 
+	 *
 	 * @param onDrawerScrollListener
 	 *            The listener to be notified when scrolling starts or stops.
 	 */
@@ -797,7 +800,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Returns the handle of the drawer.
-	 * 
+	 *
 	 * @return The View reprenseting the handle of the drawer, identified by the "handle" id in XML.
 	 */
 	public View getHandle() {
@@ -806,7 +809,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Returns the content of the drawer.
-	 * 
+	 *
 	 * @return The View reprenseting the content of the drawer, identified by the "content" id in XML.
 	 */
 	public View getContent() {
@@ -815,7 +818,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Unlocks the SlidingDrawer so that touch events are processed.
-	 * 
+	 *
 	 * @see #lock()
 	 */
 	public void unlock() {
@@ -824,7 +827,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Locks the SlidingDrawer so that touch events are ignores.
-	 * 
+	 *
 	 * @see #unlock()
 	 */
 	public void lock() {
@@ -833,7 +836,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Indicates whether the drawer is currently fully opened.
-	 * 
+	 *
 	 * @return True if the drawer is opened, false otherwise.
 	 */
 	public boolean isOpened() {
@@ -842,7 +845,7 @@ public class SlidingDrawer extends ViewGroup {
 
 	/**
 	 * Indicates whether the drawer is scrolling or flinging.
-	 * 
+	 *
 	 * @return True if the drawer is scroller or flinging, false otherwise.
 	 */
 	public boolean isMoving() {
@@ -866,12 +869,21 @@ public class SlidingDrawer extends ViewGroup {
 		}
 	}
 
-	@SuppressLint("HandlerLeak")
-	private class SlidingHandler extends Handler {
+	private static class SlidingHandler extends Handler {
+		private final WeakReference<SlidingDrawer> weakDrawer;
+
+		public SlidingHandler(SlidingDrawer slidingDrawer) {
+			weakDrawer = new WeakReference<>(slidingDrawer);
+		}
+
+		@Override
 		public void handleMessage(Message m) {
 			switch (m.what) {
 			case MSG_ANIMATE:
-				doAnimation();
+				SlidingDrawer slidingDrawer = weakDrawer.get();
+				if (slidingDrawer != null) {
+					slidingDrawer.doAnimation();
+				}
 				break;
 			}
 		}
