@@ -48,7 +48,7 @@ ext {
 }
 
 android {
-    compileSdkVersion 'Google Inc.:Google APIs:23'
+    compileSdkVersion 23
     buildToolsVersion '25.0.0'
 
     defaultConfig {
