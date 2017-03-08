@@ -1,23 +1,5 @@
 package com.rafali.flickruploader.ui.activity;
 
-import com.google.common.collect.Lists;
-
-import com.rafali.common.STR;
-import com.rafali.common.ToolString;
-import com.rafali.flickruploader.api.FlickrApi;
-import com.rafali.flickruploader.enums.VIEW_SIZE;
-import com.rafali.flickruploader.model.FlickrSet;
-import com.rafali.flickruploader.model.Folder;
-import com.rafali.flickruploader.model.Media;
-import com.rafali.flickruploader.tool.Utils;
-import com.rafali.flickruploader2.R;
-
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.ViewById;
-import org.slf4j.LoggerFactory;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -34,6 +16,24 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.common.collect.Lists;
+import com.rafali.common.STR;
+import com.rafali.common.ToolString;
+import com.rafali.flickruploader.api.FlickrApi;
+import com.rafali.flickruploader.enums.VIEW_SIZE;
+import com.rafali.flickruploader.model.FlickrSet;
+import com.rafali.flickruploader.model.Folder;
+import com.rafali.flickruploader.model.Media;
+import com.rafali.flickruploader.tool.Utils;
+import com.rafali.flickruploader2.R;
+
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class AutoUploadFoldersActivity extends AppCompatActivity implements OnIt
     private static final String EXISTING_SET = "Existing set…";
     private static final String NEW_SET = "New set…";
     private static final String DISABLE_AUTO_UPLOAD = "Disable auto-upload";
-    static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FlickrUploaderActivity.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AutoUploadFoldersActivity.class);
 
     AutoUploadFoldersActivity activity = this;
 
