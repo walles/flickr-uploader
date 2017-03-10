@@ -396,8 +396,8 @@ public final class Utils {
 
 	static final String[] proj = { FileColumns._ID, FileColumns.DATA, FileColumns.MEDIA_TYPE, FileColumns.DATE_ADDED, FileColumns.SIZE, Images.Media.DATE_TAKEN };
 
-	static long lastCached = 0;
-	final static List<Media> cachedMedias = new ArrayList<>();
+	private static long lastCached = 0;
+	private final static List<Media> cachedMedias = new ArrayList<>();
 
 	public static List<Media> loadMedia(boolean sync) {
 		long t0 = System.currentTimeMillis();
@@ -409,7 +409,8 @@ public final class Utils {
                         long start = System.currentTimeMillis();
                         cachedMedias.addAll(Query.all(Media.class).get().asList());
                         lastCached = System.currentTimeMillis();
-                        LOG.info(cachedMedias.size() + " load from local database done in " + (System.currentTimeMillis() - start) + " ms");
+                        LOG.info("{} load from local database done in {} ms", cachedMedias.size(),
+                                System.currentTimeMillis() - start);
                         empty = cachedMedias.isEmpty();
                     } else {
                         empty = false;
@@ -425,7 +426,10 @@ public final class Utils {
                 }
                 return syncMedia;
             } else {
-                LOG.debug("returning " + (System.currentTimeMillis() - lastCached) + " ms old cachedMedias");
+				synchronized (cachedMedias) {
+                    LOG.debug("returning {} ms old cachedMedias",
+                            System.currentTimeMillis() - lastCached);
+                }
             }
 			synchronized (cachedMedias) {
                 return new ArrayList<>(cachedMedias);
@@ -445,7 +449,6 @@ public final class Utils {
 		Transaction t = new Transaction();
 		int nbNewFiles = 0;
 		try {
-
 			ManyQuery<Media> query = Query.many(Media.class, "select * from Media order by id asc");
 			CursorList<Media> cursorList = query.get();
 			final int totalDatabase = cursorList.size();
