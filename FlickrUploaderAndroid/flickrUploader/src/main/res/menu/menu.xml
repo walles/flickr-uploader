@@ -3,7 +3,7 @@
 
     <item
         android:icon="@drawable/upload"
-        rafali:showAsAction="ifRoom"
+        rafali:showAsAction="always"
         android:title="Upload">
         <menu>
             <item
@@ -18,7 +18,7 @@
     </item>
     <item
         android:icon="@drawable/select_all"
-        rafali:showAsAction="ifRoom"
+        rafali:showAsAction="always"
         android:title="Select">
         <menu>
             <item
@@ -41,7 +41,7 @@
     </item>
     <item
         android:icon="@drawable/filter"
-        rafali:showAsAction="ifRoom"
+        rafali:showAsAction="always"
         android:title="Filter">
         <menu>
             <group android:checkableBehavior="all" >
@@ -66,7 +66,7 @@
     </item>
     <item
         android:icon="@drawable/grid_small"
-        rafali:showAsAction="ifRoom"
+        rafali:showAsAction="always"
         android:title="View">
         <menu>
             <item
@@ -108,7 +108,7 @@
     </item>
     <item
         android:icon="@drawable/menu_more"
-        rafali:showAsAction="ifRoom"
+        rafali:showAsAction="always"
         android:title="Menu">
         <menu>
             <item

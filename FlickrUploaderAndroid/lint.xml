@@ -17,4 +17,7 @@
     <issue id="UselessParent" severity="ignore"/>
     <issue id="Registered" severity="ignore"/>
     <issue id="ExportedPreferenceActivity" severity="ignore"/>
+
+    <!-- The main UI looks weird if we adhere to this -->
+    <issue id="AlwaysShowAction" severity="ignore"/>
 </lint>
