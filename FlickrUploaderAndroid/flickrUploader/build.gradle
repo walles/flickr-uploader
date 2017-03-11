@@ -49,7 +49,7 @@ ext {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.1'
 
     defaultConfig {
         applicationId "com.gmail.walles.johan.flickruploader2"
