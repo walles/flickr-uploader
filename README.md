@@ -41,3 +41,15 @@ Building
 with one line: "`apiKey=0`" (or follow the [official Crashlytics
 instructions](https://docs.fabric.io/android/fabric/settings/working-in-teams.html#android-projects))
 1. In Android Studio, start the `flickrUploader` launch configuration.
+
+Releasing
+=========
+1. Put your signing info in `~/.gradle/gradle.properties` as described at
+<http://stackoverflow.com/a/21020469/473672>
+1. `cd FlickrUploaderAndroid`
+1. Do `git tag` and decide on what the new version number should be
+1. `git tag vN.X.Y` for the new version
+1. `./gradlew build`
+1. Upload `flickrUploader/build/outputs/apk/flickrUploader-release.apk` to
+Google Play
+1. `git push --tags`
