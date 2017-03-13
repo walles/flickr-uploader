@@ -1047,7 +1047,7 @@ public final class Utils {
 		});
 		builder.setPositiveButton("Contact support", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
-				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + BuildConfig.VERSION_NAME, "I have read the FAQ and I still have a question:", true);
+				Utils.showEmailActivity(activity, "Feedback on Uploader for Flickr " + BuildConfig.VERSION_NAME, "I have read the FAQ and I still have a question:", true);
 			}
 
 		});
@@ -1113,7 +1113,7 @@ public final class Utils {
 	}
 
 	public static String getUploadDescription() {
-		return sp.getString("upload_description", "uploaded with <a href='https://play.google.com/store/apps/details?id=com.rafali.flickruploader2'>Flickr Uploader</a> for Android");
+		return sp.getString("upload_description", "uploaded with <a href='https://play.google.com/store/apps/details?id=com.rafali.flickruploader2'>Uploader for Flickr</a> for Android");
 	}
 
 	public static long getUploadDelayMs() {

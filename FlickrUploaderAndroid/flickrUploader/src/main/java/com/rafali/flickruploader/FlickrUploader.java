@@ -46,7 +46,7 @@ public class FlickrUploader extends Application {
             sprinkles.addMigration(initialMigration);
             Sprinkles.getDatabase();
         } catch (Throwable e) {
-            Log.e("Flickr Uploader", e.getMessage(), e);
+            LOG.error("{}", e.getMessage(), e);
         }
     }
 
@@ -77,7 +77,7 @@ public class FlickrUploader extends Application {
             appender.stop();
             appender.start();
         } catch (Throwable e) {
-            Log.e("Flickr Uploader", e.getMessage(), e);
+            LOG.error("{}", e.getMessage(), e);
         }
     }
 
@@ -99,7 +99,7 @@ public class FlickrUploader extends Application {
                 }
             }
         } catch (Throwable e) {
-            Log.e("Flickr Uploader", e.getMessage(), e);
+            LOG.error("{}", e.getMessage(), e);
         }
     }
 

@@ -140,7 +140,7 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 		findPreference("feedback").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				Utils.showEmailActivity(activity, "Feedback on Flickr Uploader " + BuildConfig.VERSION_NAME, "Here are some feedback to improve this app:", true);
+				Utils.showEmailActivity(activity, "Feedback on Uploader for Flickr " + BuildConfig.VERSION_NAME, "Here are some feedback to improve this app:", true);
 				return false;
 			}
 

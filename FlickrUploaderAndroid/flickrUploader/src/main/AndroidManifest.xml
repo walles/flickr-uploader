@@ -25,7 +25,7 @@
         android:name="com.rafali.flickruploader.FlickrUploader"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="Flickr Uploader"
+        android:label="Uploader for Flickr"
         android:supportsRtl="false"
         android:theme="@style/CustomTheme" >
         <service android:name="com.rafali.flickruploader.service.UploadService" />
@@ -49,7 +49,7 @@
         <activity
             android:name="com.rafali.flickruploader.ui.activity.FlickrUploaderActivity_"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="Flickr Uploader"
+            android:label="Uploader for Flickr"
             android:logo="@drawable/upload" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
