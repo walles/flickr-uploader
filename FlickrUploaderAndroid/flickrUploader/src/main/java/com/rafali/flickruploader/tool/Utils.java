@@ -1,7 +1,5 @@
 package com.rafali.flickruploader.tool;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -77,7 +75,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import se.emilsjolander.sprinkles.CursorList;
@@ -470,7 +467,8 @@ public final class Utils {
 
 			final boolean shouldAutoUpload = totalDatabase > 0 && isAutoUpload() && FlickrApi.isAuthentified();
 
-			LOG.debug("totalMediaStore = " + totalMediaStore + ", totalDatabase = " + totalDatabase);
+
+            LOG.debug("totalMediaStore = {}, totalDatabase = {}", totalMediaStore, totalDatabase);
 			int progress = -1;
 			Media currentMedia = null;
 			int max = Math.max(totalMediaStore, totalDatabase);
@@ -488,7 +486,7 @@ public final class Utils {
 				}
 				if (cursor.isAfterLast()) {
 					if (currentMedia != null) {
-						LOG.info(currentMedia + " no longer exist, we should delete it here too");
+                        LOG.info("{} no longer exist, we should delete it here too", currentMedia);
 						currentMedia.deleteAsync();
 						currentMedia = null;
 					}
@@ -501,7 +499,7 @@ public final class Utils {
 						// + ", currentMedia=" + currentMedia);
 
 						if (currentMedia != null && currentMedia.getId() < mediaStoreId) {
-							LOG.info(currentMedia + " no longer exist, we should delete it");
+                            LOG.info("{} no longer exist, we should delete it", currentMedia);
 							currentMedia.deleteAsync();
 							currentMedia = null;
 						} else if (currentMedia != null && currentMedia.getId() == mediaStoreId && currentMedia.getPath().equals(data)) {
@@ -539,7 +537,7 @@ public final class Utils {
 									date = Long.valueOf(dateStr);
 								}
 							} catch (Throwable e) {
-								LOG.warn(e.getClass().getSimpleName() + " : " + dateStr);
+                                LOG.warn("{} : {}", e.getClass().getSimpleName(), dateStr);
 							}
 							if (date == null) {
 								File file = new File(data);
@@ -575,7 +573,7 @@ public final class Utils {
 		if (nbNewFiles > 0) {
 			FlickrUploaderActivity.onNewFiles();
 		}
-		LOG.info(syncedMedias.size() + " sync done in " + (System.currentTimeMillis() - start) + " ms");
+        LOG.info("{} sync done in {} ms", syncedMedias.size(), System.currentTimeMillis() - start);
 		return syncedMedias;
 	}
 
@@ -627,8 +625,8 @@ public final class Utils {
 		return CAN_UPLOAD.ok;
 	}
 
-	public static interface Callback<E> {
-		public void onResult(E result);
+	public interface Callback<E> {
+		void onResult(E result);
 	}
 
 	public static Bitmap getBitmap(Media media, VIEW_SIZE view_size) {
@@ -676,7 +674,7 @@ public final class Utils {
 					bitmap = BitmapFactory.decodeFile(media.getPath(), opts);
 				}
 			} catch (OutOfMemoryError e) {
-				LOG.warn("retry : " + retry + ", " + e.getMessage(), e);
+                LOG.warn("retry : {}, {}", retry, e.getMessage(), e);
 			} catch (Throwable e) {
 				LOG.error(ToolString.stack2string(e));
 			} finally {
@@ -715,7 +713,7 @@ public final class Utils {
 
 	}
 
-	static int nbFolderMonitored = -1;
+	private static int nbFolderMonitored = -1;
 
 	public static int getFoldersMonitoredNb() {
 		if (nbFolderMonitored < 0) {
@@ -756,7 +754,9 @@ public final class Utils {
 						folder.setExist(false);
 						if (folderSetNames != null) {
 							String flickrSetTitle = folderSetNames.get(path);
-							LOG.info("version migration path : " + path + ", folder : " + folder + ", flickrSetTitle : " + flickrSetTitle);
+                            LOG.info(
+                                    "version migration path : {}, folder : {}, flickrSetTitle : {}",
+                                    path, folder, flickrSetTitle);
 							folder.setFlickrSetTitle(flickrSetTitle);
 						} else if (emptyDatabase && (folderMedias.size() > 50 || isDefaultMediaFolder(path))) {
 							folder.setFlickrSetTitle(STR.instantUpload);
@@ -867,29 +867,6 @@ public final class Utils {
 
 	private static boolean charging = false;
 
-	public static List<String> getAccountEmails() {
-		List<String> emails = new ArrayList<>();
-		for (Account account : getAccountsWithEmail()) {
-			emails.add(account.name);
-		}
-		return emails;
-	}
-
-	public static List<Account> getAccountsWithEmail() {
-		List<Account> accountsEmails = new ArrayList<>();
-		AccountManager accountManager = AccountManager.get(FlickrUploader.getAppContext());
-		final Account[] accounts = accountManager.getAccountsByType("com.google");
-		for (Account account : accounts) {
-			if (account.name != null) {
-				String name = account.name.toLowerCase(Locale.ENGLISH).trim();
-				if (name.matches(ToolString.REGEX_EMAIL)) {
-					accountsEmails.add(new Account(name, account.type));
-				}
-			}
-		}
-		return accountsEmails;
-	}
-
 	public static void setCharging(boolean charging) {
 		Utils.charging = charging;
 	}
@@ -981,8 +958,6 @@ public final class Utils {
 									bW.newLine();
 									bW.write("device name : " + getDeviceName());
 									bW.newLine();
-									bW.write("device accounts : " + getAccountEmails());
-									bW.newLine();
 									bW.write("date install : "
 											+ new Date(FlickrUploader.getAppContext().getPackageManager().getPackageInfo(FlickrUploader.getAppContext().getPackageName(), 0).firstInstallTime));
 									bW.newLine();
@@ -1006,7 +981,7 @@ public final class Utils {
 								Uri uri = Uri.fromFile(publicLog);
 								intent.putExtra(Intent.EXTRA_STREAM, uri);
 							} else {
-								LOG.warn(log + " does not exist");
+                                LOG.warn("{} does not exist", log);
 							}
 						}
 						final List<ResolveInfo> resInfoList = activity.getPackageManager().queryIntentActivities(intent, 0);
@@ -1046,7 +1021,8 @@ public final class Utils {
 			}
 		});
 		builder.setPositiveButton("Contact support", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
+			@Override
+            public void onClick(DialogInterface dialog, int id) {
 				Utils.showEmailActivity(activity, "Feedback on Uploader for Flickr " + BuildConfig.VERSION_NAME, "I have read the FAQ and I still have a question:", true);
 			}
 
@@ -1060,7 +1036,8 @@ public final class Utils {
 		builder.setTitle("Auto-upload");
 		builder.setMultiChoiceItems(modes, new boolean[] { true, true }, null);
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
+			@Override
+            public void onClick(DialogInterface dialog, int id) {
 				ListView lw = ((AlertDialog) dialog).getListView();
 				Utils.setBooleanProperty(PreferencesActivity.AUTOUPLOAD, lw.isItemChecked(0));
 				Utils.setBooleanProperty(PreferencesActivity.AUTOUPLOAD_VIDEOS, lw.isItemChecked(1));
@@ -1136,9 +1113,9 @@ public final class Utils {
 			} else {
 				count += file.length();
 			}
-			LOG.debug(file + " : " + count);
+            LOG.debug("{} : {}", file, count);
 		} else {
-			LOG.warn(file + " already deleted");
+            LOG.warn("{} already deleted", file);
 		}
 		return count;
 	}
@@ -1150,14 +1127,14 @@ public final class Utils {
 	private static void toast(final String message, final int duration) {
         final FlickrUploaderActivity flickrUploaderActivity = FlickrUploaderActivity.getInstance();
         if (flickrUploaderActivity == null) {
-            LOG.debug("Not toasted : " + message);
+            LOG.debug("Not toasted : {}", message);
             return;
         }
 
         flickrUploaderActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                LOG.debug("toast : " + message);
+                LOG.debug("toast : {}", message);
                 View view = View.inflate(flickrUploaderActivity, R.layout.toast, null);
 
                 TextView text = (TextView) view.findViewById(R.id.description);
