@@ -10,10 +10,17 @@ It works like [Google+ Instant Upload](http://support.google.com/plus/answer/291
 
 The main benefit of this app over Google+ Instant Upload is the fact that you can upload ONE FREAKING TERABYTE of photos&videos in **high resolution** for free!
 
-You can download it on Google Play Store: https://play.google.com/store/apps/details?id=com.rafali.flickruploader2
+Installation
+------------
+You can install it from Google Play Store:
 
-You can fork this project or use the source code for any project. It is licensed under the GPL v2. I just request that you do not blatantly copy the app to republish it on the Play Store.
-You may however use it as a base to create an uploader to a service other than Flickr. You should just have to republish the source code as the GPL v2 demand.
+https://play.google.com/store/apps/details?id=com.gmail.walles.johan.flickruploader2
+
+Development
+===========
+You can fork this project or use the source code for any project. It is licensed
+under the GPL v2. Just make sure to republish the source code as the GPL v2
+demand.
 
 It uses a few open source libraries:
 - [flickrj-android](https://code.google.com/p/flickrj-android/) : a modified version of the old java flickr lib optimized for Android and Google App Engine
@@ -27,7 +34,7 @@ It uses a few open source libraries:
 Follow me on Twitter: https://twitter.com/rafali
 
 Building
-========
+--------
 1. [Get Flickr API credentials](https://www.flickr.com/services/apps/create/apply)
 1. Create `FlickrUploaderAndroid/flickrUploader/src/main/res/values/flickr-api-strings.xml`:
 ```xml
@@ -43,7 +50,7 @@ instructions](https://docs.fabric.io/android/fabric/settings/working-in-teams.ht
 1. In Android Studio, start the `flickrUploader` launch configuration.
 
 Releasing
-=========
+---------
 1. Put your signing info in `~/.gradle/gradle.properties` as described at
 <http://stackoverflow.com/a/21020469/473672>
 1. `cd FlickrUploaderAndroid`
