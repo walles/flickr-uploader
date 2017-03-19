@@ -133,14 +133,13 @@ public class REST extends Transport {
 	 * @param parameters
 	 *            The parameters (collection of Parameter objects)
 	 * @return The Response
-	 * @throws IOException
-	 * @throws JSONException
 	 */
+	@Override
 	public Response get(String path, List<Parameter> parameters) throws IOException, JSONException {
 		parameters.add(new Parameter("nojsoncallback", "1"));
 		parameters.add(new Parameter("format", "json"));
 		String data = getLine(path, parameters);
-		return new RESTResponse(data);
+		return new RESTResponse(data, parameters.toString());
 	}
 
 	private InputStream getInputStream(URL url, List<Parameter> parameters) throws IOException {
@@ -621,7 +620,7 @@ public class REST extends Transport {
 	@Override
 	public Response post(String path, List<Parameter> parameters) throws IOException, JSONException {
 		String data = sendPost(path, parameters);
-		return new RESTResponse(data);
+		return new RESTResponse(data, parameters.toString());
 	}
 
 	public boolean isProxyAuth() {
