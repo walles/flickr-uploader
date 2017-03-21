@@ -261,7 +261,7 @@ public class StickyHeaderListView extends ListView implements AbsListView.OnScro
 
 				headerView.measure(widthMeasure, heightMeasure);
 				headerView.layout(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight());
-			} catch (Throwable e) {
+			} catch (Exception e) {
 			}
 		}
 	}

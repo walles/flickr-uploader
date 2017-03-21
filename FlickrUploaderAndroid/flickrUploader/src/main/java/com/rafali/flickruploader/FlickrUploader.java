@@ -45,7 +45,7 @@ public class FlickrUploader extends Application {
             initialMigration.createTable(Folder.class);
             sprinkles.addMigration(initialMigration);
             Sprinkles.getDatabase();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error("{}", e.getMessage(), e);
         }
     }
@@ -76,7 +76,7 @@ public class FlickrUploader extends Application {
             Appender<ILoggingEvent> appender = rootLogger.getAppender("file");
             appender.stop();
             appender.start();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error("{}", e.getMessage(), e);
         }
     }
@@ -92,13 +92,13 @@ public class FlickrUploader extends Application {
                         try {
                             if (System.currentTimeMillis() - file.lastModified() > 24 * 60 * 60 * 1000L)
                                 file.delete();
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             LOG.error("???", e);
                         }
                     }
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error("{}", e.getMessage(), e);
         }
     }

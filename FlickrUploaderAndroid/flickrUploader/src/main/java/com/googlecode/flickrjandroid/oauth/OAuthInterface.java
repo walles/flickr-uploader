@@ -30,7 +30,7 @@ import com.rafali.common.ToolString;
 
 /**
  * Authentication interface for the new Flickr OAuth 1a support: http://www.flickr.com/services/api/auth.oauth.html
- * 
+ *
  * @author Toby Yu
  */
 public class OAuthInterface {
@@ -60,7 +60,7 @@ public class OAuthInterface {
 
 	/**
 	 * Construct the AuthInterface.
-	 * 
+	 *
 	 * @param apiKey
 	 *            The API key
 	 * @param transport
@@ -94,7 +94,7 @@ public class OAuthInterface {
 
 	/**
 	 * Get a request token.
-	 * 
+	 *
 	 * @return the frob
 	 * @throws IOException
 	 * @throws FlickrException
@@ -131,7 +131,7 @@ public class OAuthInterface {
 				logger.info("Response: {}", response);
 				token = response.get(KEY_OAUTH_TOKEN);
 				token_secret = response.get(KEY_OAUTH_TOKEN_SECRET);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				exc = e;
 			} finally {
 				retry++;
@@ -209,7 +209,7 @@ public class OAuthInterface {
 					result.setToken(new OAuthToken(response.get("oauth_token"), response.get("oauth_token_secret")));
 					RequestContext.getRequestContext().setOAuth(result);
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				exc = e;
 			} finally {
 				retry++;
@@ -239,9 +239,9 @@ public class OAuthInterface {
 
 	/**
 	 * Build the authentication URL using the given permission and frob.
-	 * 
+	 *
 	 * The hostname used here is www.flickr.com. It differs from the api-default api.flickr.com.
-	 * 
+	 *
 	 * @param permission
 	 *            The Permission
 	 * @param frob

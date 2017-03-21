@@ -123,7 +123,7 @@ public class Notifications {
 			notification.icon = android.R.drawable.stat_sys_upload_done;
 			// notification.iconLevel = progress / 10;
 			manager.notify(0, notification);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 
@@ -152,7 +152,7 @@ public class Notifications {
 				// notification.iconLevel = progress / 10;
 				manager.notify(0, notification);
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 

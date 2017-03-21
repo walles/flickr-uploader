@@ -412,7 +412,7 @@ public class UploadService extends Service {
 
 				} catch (InterruptedException e) {
 					LOG.warn("Thread interrupted");
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				} finally {
 					if (mediaCurrentlyUploading != null) {
@@ -687,7 +687,7 @@ public class UploadService extends Service {
 							}
 						}
 					}
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			}
@@ -744,7 +744,7 @@ public class UploadService extends Service {
 							LOG.warn(nbFileDeleted + " files deleted");
 							Utils.loadMedia(true);
 						}
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					}
 				}

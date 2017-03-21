@@ -48,7 +48,7 @@ public class Utils {
 			T newInstance = resultClass.newInstance();
 			instances.put(key, newInstance);
 			return newInstance;
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Could not instantiate with " + resultClass.getSimpleName() + " with key " + primaryKeyValue + " : " + e.getMessage(), e);
 		}
 	}

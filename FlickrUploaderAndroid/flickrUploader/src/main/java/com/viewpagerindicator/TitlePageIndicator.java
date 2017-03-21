@@ -65,7 +65,7 @@ public class TitlePageIndicator extends View implements PageIndicator {
 	public interface OnCenterItemClickListener {
 		/**
 		 * Callback when the center item has been clicked.
-		 * 
+		 *
 		 * @param position
 		 *            Position of the current center item.
 		 */
@@ -232,7 +232,7 @@ public class TitlePageIndicator extends View implements PageIndicator {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.view.View#onDraw(android.graphics.Canvas)
 	 */
 	@Override
@@ -521,7 +521,7 @@ public class TitlePageIndicator extends View implements PageIndicator {
 				mLastMotionX = MotionEventCompat.getX(ev, MotionEventCompat.findPointerIndex(ev, mActivePointerId));
 				break;
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 		}
 
 		return true;

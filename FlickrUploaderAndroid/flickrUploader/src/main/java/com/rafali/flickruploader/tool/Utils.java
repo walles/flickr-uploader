@@ -154,7 +154,7 @@ public final class Utils {
 		if (view_size == null) {
 			try {
 				view_size = VIEW_SIZE.valueOf(Utils.getStringProperty("view_size", VIEW_SIZE.medium.toString()));
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 				view_size = VIEW_SIZE.medium;
 			}
@@ -173,7 +173,7 @@ public final class Utils {
 		if (view_group_type == null) {
 			try {
 				view_group_type = VIEW_GROUP_TYPE.valueOf(Utils.getStringProperty("view_group_type", VIEW_GROUP_TYPE.date.toString()));
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 				view_group_type = VIEW_GROUP_TYPE.date;
 			}
@@ -374,7 +374,7 @@ public final class Utils {
 
 			fis.close();
 			return complete.digest();
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -536,7 +536,7 @@ public final class Utils {
 								} else {
 									date = Long.valueOf(dateStr);
 								}
-							} catch (Throwable e) {
+							} catch (Exception e) {
                                 LOG.warn("{} : {}", e.getClass().getSimpleName(), dateStr);
 							}
 							if (date == null) {
@@ -557,13 +557,13 @@ public final class Utils {
 
 							cursor.moveToNext();
 						}
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					}
 				}
 			}
 			t.setSuccessful(true);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		} finally {
 			t.finish();
@@ -651,7 +651,7 @@ public final class Utils {
 							byte[] thumbnail = exif.getThumbnail();
 							bitmap = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
 						}
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					}
 
@@ -675,7 +675,7 @@ public final class Utils {
 				}
 			} catch (OutOfMemoryError e) {
                 LOG.warn("retry : {}, {}", retry, e.getMessage(), e);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 			} finally {
 				retry++;
@@ -770,7 +770,7 @@ public final class Utils {
 					folder.save(t);
 				}
 				t.setSuccessful(true);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 			} finally {
 				t.finish();
@@ -878,7 +878,7 @@ public final class Utils {
 			int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
 			boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL;
 			setCharging(isCharging);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 		return charging;
@@ -963,7 +963,7 @@ public final class Utils {
 									bW.newLine();
 									bW.write("premium : " + true);
 									bW.newLine();
-								} catch (Throwable e) {
+								} catch (Exception e) {
 									String stack2string = ToolString.stack2string(e);
 									LOG.error(stack2string);
 									bW.write(stack2string);
@@ -973,7 +973,7 @@ public final class Utils {
 										try {
 											bW.flush();
 											bW.close();
-										} catch (Throwable e) {
+										} catch (Exception e) {
 											LOG.error(ToolString.stack2string(e));
 										}
 									}
@@ -1000,7 +1000,7 @@ public final class Utils {
 						} else {
 							activity.startActivity(Intent.createChooser(intent, "Send Feedback:"));
 						}
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					} finally {
 						showingEmailActivity = false;
@@ -1097,7 +1097,7 @@ public final class Utils {
 		try {
 			String autoupload_delay = sp.getString("autoupload_delay", "delay0s");
 			return Long.valueOf(autoupload_delay.replaceAll("[^0-9.]", "")) * 1000L;
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 		return 0;

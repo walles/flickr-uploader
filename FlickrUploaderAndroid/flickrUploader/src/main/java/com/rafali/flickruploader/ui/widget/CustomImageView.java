@@ -19,7 +19,7 @@ public class CustomImageView extends CacheableImageView {
 	protected void onDraw(Canvas canvas) {
 		try {
 			super.onDraw(canvas);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
 		}
 	}

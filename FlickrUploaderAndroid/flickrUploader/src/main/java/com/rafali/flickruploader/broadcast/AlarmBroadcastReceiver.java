@@ -30,7 +30,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 			} else {
 				initAlarm();
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		} finally {
 			if (wl != null) {
@@ -57,7 +57,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 				alarmManager.cancel(sender);
 				Utils.setBooleanProperty(STR.alarmSet, false);
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 	}

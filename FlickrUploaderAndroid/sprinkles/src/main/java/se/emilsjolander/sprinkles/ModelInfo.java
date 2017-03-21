@@ -163,7 +163,7 @@ class ModelInfo {
 			try {
 				clazz.getDeclaredConstructor();
 				clazz.newInstance();
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new RuntimeException(clazz.getSimpleName() + " error with default constructor : " + e.getClass().getSimpleName() + " : " + e.getMessage(), e);
 			}
 

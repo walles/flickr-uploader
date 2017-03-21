@@ -117,7 +117,7 @@ public class FlickrApi {
 							break;
 						}
 					}
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			}
@@ -178,7 +178,7 @@ public class FlickrApi {
 										}
 									}
 									t.setSuccessful(true);
-								} catch (Throwable e) {
+								} catch (Exception e) {
 									LOG.error(ToolString.stack2string(e));
 								} finally {
 									t.finish();
@@ -216,14 +216,14 @@ public class FlickrApi {
 									} else {
 										LOG.error(ToolString.stack2string(e));
 									}
-								} catch (Throwable e) {
+								} catch (Exception e) {
 									LOG.error(ToolString.stack2string(e));
 								}
 
 							}
 						}
 
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					}
 				}
@@ -360,7 +360,7 @@ public class FlickrApi {
 						Date date = new Date(media.getTimestampCreated());
 						FlickrApi.get().getPhotosInterface().setDates(media.getFlickrId(), date, date, "0");
 					}
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			}
@@ -378,7 +378,7 @@ public class FlickrApi {
 			throw new UploadException(e.getErrorCode() + ": " + e.getErrorMessage() + ": " + media.getPath(), e);
 		} catch (UploadException e) {
 			throw e;
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			throw new UploadException(e.getMessage(), e);
 		}
 	}
@@ -423,7 +423,7 @@ public class FlickrApi {
 			if (echo.has("stat")) {
 				return true;
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error("No network : " + e.getClass().getSimpleName() + " : " + e.getMessage());
 		}
 		return false;
@@ -486,7 +486,7 @@ public class FlickrApi {
 				while (photosets == null && retry < 3) {
 					try {
 						photosets = FlickrApi.get().getPhotosetsInterface().getList(Utils.getStringProperty(STR.userId)).getPhotosets();
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 						try {
 							Thread.sleep((long) (Math.pow(4, retry) * 1000L));
@@ -516,7 +516,7 @@ public class FlickrApi {
 						}
 
 						t.setSuccessful(true);
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						LOG.error(ToolString.stack2string(e));
 					} finally {
 						t.finish();
@@ -525,7 +525,7 @@ public class FlickrApi {
 
 			}
 			photoSets.putAll(cachedPhotoSets);
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			LOG.error(ToolString.stack2string(e));
 		}
 		return photoSets;
@@ -547,7 +547,7 @@ public class FlickrApi {
 						LOG.warn(media + " is uploaded : " + photo.getId() + " = " + md5tag);
 						return true;
 					}
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 					try {
 						Thread.sleep((long) (Math.pow(4, retry) * 1000L));

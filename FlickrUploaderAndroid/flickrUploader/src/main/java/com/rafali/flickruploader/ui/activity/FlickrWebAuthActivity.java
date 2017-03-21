@@ -104,7 +104,7 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
             } else {
                 throw new IOException(result);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             setError(e);
         }
     }
@@ -232,7 +232,7 @@ public class FlickrWebAuthActivity extends AppCompatActivity {
                     }
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             setError(e);
         }
     }

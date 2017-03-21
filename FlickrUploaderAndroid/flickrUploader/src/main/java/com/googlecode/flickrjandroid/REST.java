@@ -280,7 +280,7 @@ public class REST extends Transport {
 					conn.setConnectTimeout(50);
 					conn.setReadTimeout(50);
 					conn.disconnect();
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			} else {
@@ -291,7 +291,7 @@ public class REST extends Transport {
 					LOG.warn("closing DataOutputStream");
 					out.close();
 					LOG.warn("DataOutputStream closed");
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			} else {
@@ -302,7 +302,7 @@ public class REST extends Transport {
 					LOG.warn("closing InputStream");
 					in.close();
 					LOG.warn("InputStream closed");
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 			} else {
@@ -312,7 +312,7 @@ public class REST extends Transport {
 			try {
 				UploadThread.this.interrupt();
 				LOG.warn(this + " is interrupted : " + UploadThread.this.isInterrupted());
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 			}
 			onFinish();
@@ -444,7 +444,7 @@ public class REST extends Transport {
 					response.parse(document);
 					responseContainer[0] = response;
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				responseContainer[0] = t;
 			} finally {
 				try {
@@ -452,7 +452,7 @@ public class REST extends Transport {
 					IOUtilities.close(out);
 					if (conn != null)
 						conn.disconnect();
-				} catch (Throwable e) {
+				} catch (Exception e) {
 					LOG.error(ToolString.stack2string(e));
 				}
 				onFinish();
@@ -466,7 +466,7 @@ public class REST extends Transport {
 				synchronized (responseContainer) {
 					responseContainer.notifyAll();
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error(ToolString.stack2string(e));
 			}
 		}

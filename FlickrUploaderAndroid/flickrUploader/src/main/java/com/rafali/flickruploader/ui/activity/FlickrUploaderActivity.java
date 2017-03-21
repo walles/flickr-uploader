@@ -962,7 +962,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
                                 }
                             });
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         LOG.error("FINAL ERROR\n" + ToolString.stack2string(e));
                     }
 
