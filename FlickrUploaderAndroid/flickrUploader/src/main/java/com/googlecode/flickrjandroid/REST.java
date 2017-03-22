@@ -89,7 +89,7 @@ public class REST extends Transport {
 		return new RESTResponse(data, parameters.toString());
 	}
 
-	private InputStream getInputStream(URL url, List<Parameter> parameters) throws IOException {
+	private InputStream getInputStream(URL url) throws IOException {
 		if (BuildConfig.DEBUG) {
 			LOG.info("GET URL: {}", url);
 		}
@@ -119,7 +119,7 @@ public class REST extends Transport {
 		InputStream in = null;
 		BufferedReader rd = null;
 		try {
-            in = getInputStream(url, parameters);
+            in = getInputStream(url);
             rd = new BufferedReader(new InputStreamReader(in, OAuthUtils.ENC));
             final StringBuilder buf = new StringBuilder();
             String line;
@@ -188,12 +188,14 @@ public class REST extends Transport {
 		}
 	}
 
-	private static class UploadThread extends Thread {
+	private static class UploadThread {
 		private final Media media;
 		private final List<Parameter> parameters;
 		private final Object[] responseContainer;
         private final URL url;
         private final DocumentBuilder builder;
+
+        private final Thread thread;
 
 		private HttpURLConnection conn = null;
 		private DataOutputStream out = null;
@@ -209,6 +211,14 @@ public class REST extends Transport {
 
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
             builder = builderFactory.newDocumentBuilder();
+
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    UploadThread.this.run();
+                }
+            });
+            thread.setName("Upload <" + media.getName() + ">");
         }
 
 		private boolean killed = false;
@@ -251,6 +261,12 @@ public class REST extends Transport {
                     }
                 } else if (value instanceof byte[]) {
                     out.write((byte[]) value);
+                } else {
+                    String valueType = "<null>";
+                    if (value != null) {
+                        valueType = value.getClass().toString();
+                    }
+                    LOG.warn("Not writing {} <{}>=<{}>", valueType, param.getName(), value);
                 }
             } else {
                 out.writeBytes("Content-Disposition: form-data; name=\"" + name + "\"\r\n");
@@ -297,42 +313,51 @@ public class REST extends Transport {
 				LOG.warn("InputStream is null");
 			}
 
-			interrupt();
-			LOG.warn("{} is interrupted : {}", this, isInterrupted());
+			thread.interrupt();
+			LOG.warn("{} is interrupted : {}", this, thread.isInterrupted());
 			onFinish();
 		}
 
-		@Override
-		public void run() {
-			// String data = null;
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					long lastProgressChange = System.currentTimeMillis();
-					int lastProgress = 0;
-					while (isAlive() && !isInterrupted() && media.getProgress() < 999 && System.currentTimeMillis() - lastProgressChange < 2 * 60 * 1000L) {
-						if (media.getProgress() > LIMIT) {
-							reportProgress(media, Math.min(998, media.getProgress() + 1));
-						}
-						if (lastProgress != media.getProgress()) {
-							lastProgress = media.getProgress();
-							lastProgressChange = System.currentTimeMillis();
-						}
-						try {
-							Thread.sleep(Math.max(1000, (media.getProgress() - LIMIT) * 600));
-						} catch (InterruptedException ignore) {
-						}
-					}
-					if (media.getProgress() < 999 && System.currentTimeMillis() - lastProgressChange >= 2 * 60 * 1000L) {
-						LOG.warn("Upload is taking too long, started {} ago",
-								ToolString.formatDuration(System.currentTimeMillis() - media.getTimestampUploadStarted()));
+        private void startSupervisionThread() {
+            final String threadName = "Upload supervisor: <" + media + ">";
+            Thread supervisionThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long lastProgressChange = System.currentTimeMillis();
+                    int lastProgress = 0;
+                    while (thread.isAlive() && !thread.isInterrupted() && media.getProgress() < 999 && System.currentTimeMillis() - lastProgressChange < 2 * 60 * 1000L) {
+                        if (media.getProgress() > LIMIT) {
+                            reportProgress(media, Math.min(998, media.getProgress() + 1));
+                        }
+                        if (lastProgress != media.getProgress()) {
+                            lastProgress = media.getProgress();
+                            lastProgressChange = System.currentTimeMillis();
+                        }
+                        try {
+                            // The whole point of this thread is to wake up from time to time and
+                            // report progress or shut down if it's taking too long
+                            //
+                            //noinspection BusyWait
+                            Thread.sleep(Math.max(1000, (media.getProgress() - LIMIT) * 600));
+                        } catch (InterruptedException e) {
+                            LOG.warn("Thread interrupted: <{}>", threadName, e);
+                        }
+                    }
+                    if (media.getProgress() < 999 && System.currentTimeMillis() - lastProgressChange >= 2 * 60 * 1000L) {
+                        LOG.warn("Upload is taking too long, started {} ago",
+                                ToolString.formatDuration(System.currentTimeMillis() - media.getTimestampUploadStarted()));
 
                         kill();
-					}
+                    }
+                }
+            });
+            supervisionThread.setName(threadName);
+            supervisionThread.start();
+        }
 
-				}
-			}).start();
-			reportProgress(media, 0);
+        private void run() {
+            startSupervisionThread();
+            reportProgress(media, 0);
 			try {
 				if (BuildConfig.DEBUG) {
 					LOG.debug("Post URL: {}", url);
@@ -443,7 +468,7 @@ public class REST extends Transport {
 			}
 		}
 
-		private void onFinish() {
+        private void onFinish() {
 			try {
 				LOG.debug("finishing thread : {}", responseContainer[0]);
 				uploadThreads.remove(media);
@@ -454,10 +479,14 @@ public class REST extends Transport {
                     responseContainer.notifyAll();
 				}
 			} catch (Exception e) {
-				LOG.error(ToolString.stack2string(e));
+				LOG.error("Error wrapping up upload", e);
 			}
 		}
-	}
+
+        public void start() {
+            thread.start();
+        }
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -472,7 +501,7 @@ public class REST extends Transport {
 		final Object[] responseContainer = new Object[1];
 
         URL url = UrlUtilities.buildPostUrl(getHost(), getPort(), path);
-        UploadThread uploadThread = null;
+        UploadThread uploadThread;
         try {
             uploadThread = new UploadThread(media, url, parameters, responseContainer);
         } catch (ParserConfigurationException e) {
