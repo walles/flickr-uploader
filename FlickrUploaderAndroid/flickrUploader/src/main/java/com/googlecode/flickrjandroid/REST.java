@@ -116,11 +116,9 @@ public class REST extends Transport {
     private String getLine(String path, List<Parameter> parameters) throws IOException {
 		URL url = UrlUtilities.buildUrl(getHost(), getPort(), path, parameters);
         LOG.info("url : {}", url);
-		InputStream in = null;
-		BufferedReader rd = null;
-		try {
-            in = getInputStream(url);
-            rd = new BufferedReader(new InputStreamReader(in, OAuthUtils.ENC));
+		try (InputStream in = getInputStream(url);
+             BufferedReader rd = new BufferedReader(new InputStreamReader(in, OAuthUtils.ENC)))
+        {
             final StringBuilder buf = new StringBuilder();
             String line;
             while ((line = rd.readLine()) != null) {
@@ -134,9 +132,6 @@ public class REST extends Transport {
         } catch (IOException e) {
             LOG.error(e.getMessage());
             throw e;
-        } finally {
-            IOUtilities.close(in);
-            IOUtilities.close(rd);
         }
 	}
 
@@ -198,7 +193,6 @@ public class REST extends Transport {
         private final Thread thread;
 
 		private HttpURLConnection conn = null;
-		private DataOutputStream out = null;
 		private InputStream in;
 
 		private UploadThread(Media media, URL url, List<Parameter> parameters, Object[] responseContainer)
@@ -238,8 +232,7 @@ public class REST extends Transport {
                 out.writeBytes(String.format(Locale.US, "Content-Type: image/%s\r\n\r\n", imageParam.getImageType()));
                 if (value instanceof File) {
                     File file = (File) value;
-                    InputStream in = new FileInputStream(file);
-                    try {
+                    try (InputStream in = new FileInputStream(file)) {
                         long start = System.currentTimeMillis();
                         byte[] buf = new byte[512];
                         int res;
@@ -256,8 +249,6 @@ public class REST extends Transport {
                             }
                         }
                         LOG.debug("output in {} ms", System.currentTimeMillis() - start);
-                    } finally {
-                        in.close();
                     }
                 } else if (value instanceof byte[]) {
                     out.write((byte[]) value);
@@ -285,21 +276,10 @@ public class REST extends Transport {
 					conn.setReadTimeout(50);
 					conn.disconnect();
 				} catch (Exception e) {
-					LOG.error("Error setting up connection", e);
+					LOG.error("Error killing connection", e);
 				}
 			} else {
 				LOG.warn("HttpURLConnection is null");
-			}
-			if (out != null) {
-				try {
-					LOG.warn("closing DataOutputStream");
-					out.close();
-					LOG.warn("DataOutputStream closed");
-				} catch (Exception e) {
-					LOG.error("Closing DataOutputStream failed", e);
-				}
-			} else {
-				LOG.warn("DataOutputStream is null");
 			}
 			if (in != null) {
 				try {
@@ -405,20 +385,16 @@ public class REST extends Transport {
 
 				conn.connect();
 				reportProgress(media, 1);
-				out = new DataOutputStream(conn.getOutputStream());
-				out.writeBytes(boundary);
-				reportProgress(media, 2);
+				try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
+                    out.writeBytes(boundary);
+                    reportProgress(media, 2);
 
-				for (Parameter parameter : parameters) {
-					writeParam(parameter, out, boundary, media);
-				}
+                    for (Parameter parameter : parameters) {
+                        writeParam(parameter, out, boundary, media);
+                    }
 
-				out.writeBytes("--\r\n\r\n");
-				out.flush();
-
-				LOG.debug("out.size() : {}", out.size());
-
-				out.close();
+                    out.writeBytes("--\r\n\r\n");
+                }
 
 				reportProgress(media, LIMIT + 1);
 				int responseCode = -1;
@@ -426,9 +402,11 @@ public class REST extends Transport {
 					responseCode = conn.getResponseCode();
 				} catch (IOException e) {
 					LOG.error("Failed to get the POST response code", e);
-					if (conn.getErrorStream() != null) {
-						responseCode = conn.getResponseCode();
-					}
+                    try (InputStream errorStream = conn.getErrorStream()) {
+                        if (errorStream != null) {
+                            responseCode = conn.getResponseCode();
+                        }
+                    }
 					responseContainer[0] = e;
 				} finally {
 					reportProgress(media, 999);
@@ -458,7 +436,6 @@ public class REST extends Transport {
 			} finally {
 				try {
 					reportProgress(media, 1000);
-					IOUtilities.close(out);
 					if (conn != null)
 						conn.disconnect();
 				} catch (Exception e) {
@@ -565,7 +542,6 @@ public class REST extends Transport {
             LOG.trace("Send Post Input Params: path '{}'; parameters {}", path, parameters);
         }
 		HttpURLConnection conn = null;
-		DataOutputStream out = null;
 		String data = null;
 		try {
             URL url = UrlUtilities.buildPostUrl(getHost(), getPort(), path);
@@ -588,18 +564,19 @@ public class REST extends Transport {
                 conn.setReadTimeout(timeout);
             }
             conn.connect();
-            out = new DataOutputStream(conn.getOutputStream());
-            out.write(bytes);
-            out.flush();
-            out.close();
+            try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
+                out.write(bytes);
+            }
 
             int responseCode = HttpURLConnection.HTTP_OK;
             try {
                 responseCode = conn.getResponseCode();
             } catch (IOException e) {
                 LOG.error("Failed to get the POST response code", e);
-                if (conn.getErrorStream() != null) {
-                    responseCode = conn.getResponseCode();
+                try (InputStream errorStream = conn.getErrorStream()) {
+                    if (errorStream != null) {
+                        responseCode = conn.getResponseCode();
+                    }
                 }
             }
             if ((responseCode != HttpURLConnection.HTTP_OK)) {
@@ -611,7 +588,6 @@ public class REST extends Transport {
             data = result.trim();
             return data;
         } finally {
-            IOUtilities.close(out);
             if (conn != null)
                 conn.disconnect();
             if (BuildConfig.DEBUG) {
@@ -621,9 +597,7 @@ public class REST extends Transport {
 	}
 
 	private static String readFromStream(InputStream input) throws IOException {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(input));
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
 			StringBuilder buffer = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -632,7 +606,6 @@ public class REST extends Transport {
 			return buffer.toString();
 		} finally {
 			IOUtilities.close(input);
-			IOUtilities.close(reader);
 		}
 	}
 
