@@ -124,7 +124,7 @@ public class Notifications {
 			// notification.iconLevel = progress / 10;
 			manager.notify(0, notification);
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 
 	}
@@ -153,7 +153,7 @@ public class Notifications {
 				manager.notify(0, notification);
 			}
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 
 	}

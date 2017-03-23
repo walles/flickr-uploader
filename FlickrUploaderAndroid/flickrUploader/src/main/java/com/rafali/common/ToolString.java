@@ -1,9 +1,5 @@
 package com.rafali.common;
 
-import com.rafali.flickruploader.logging.LoggingUtils;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
@@ -50,24 +46,7 @@ public class ToolString {
 		return decimalFormat.format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
-	static DecimalFormat decimalFormat;
-
-	/**
-	 * @deprecated Simply pass the exception as is to your logging framework instead.
-	 */
-	@Deprecated
-	public static String stack2string(Throwable e) {
-		LoggingUtils.logException(e);
-
-		try {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			return "------\r\n" + sw + "------\r\n";
-		} catch (Exception e2) {
-			return "bad stack2string";
-		}
-	}
+	private static DecimalFormat decimalFormat;
 
 	public static String getFileName(String path) {
 		if (path.endsWith("/")) {

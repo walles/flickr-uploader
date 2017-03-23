@@ -215,7 +215,7 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 						Collections.sort(failed, Utils.MEDIA_COMPARATOR);
 						notifyDataSetChanged(failedAdapter, failed);
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					}
 				}
 			});

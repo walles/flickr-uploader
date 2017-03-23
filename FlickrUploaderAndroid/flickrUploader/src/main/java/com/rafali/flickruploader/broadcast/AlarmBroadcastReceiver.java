@@ -31,7 +31,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 				initAlarm();
 			}
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		} finally {
 			if (wl != null) {
 				wl.release();
@@ -58,7 +58,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 				Utils.setBooleanProperty(STR.alarmSet, false);
 			}
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 	}
 }

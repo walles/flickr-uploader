@@ -413,7 +413,7 @@ public class UploadService extends Service {
 				} catch (InterruptedException e) {
 					LOG.warn("Thread interrupted");
 				} catch (Exception e) {
-					LOG.error(ToolString.stack2string(e));
+					LOG.error("FIXME: Log message missing", e);
 				} finally {
 					if (mediaCurrentlyUploading != null) {
 						mediaPreviouslyUploading = mediaCurrentlyUploading;
@@ -688,7 +688,7 @@ public class UploadService extends Service {
 						}
 					}
 				} catch (Exception e) {
-					LOG.error(ToolString.stack2string(e));
+					LOG.error("FIXME: Log message missing", e);
 				}
 			}
 		}, "checkNewFiles", "checkNewFiles");
@@ -745,7 +745,7 @@ public class UploadService extends Service {
 							Utils.loadMedia(true);
 						}
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					}
 				}
 			});

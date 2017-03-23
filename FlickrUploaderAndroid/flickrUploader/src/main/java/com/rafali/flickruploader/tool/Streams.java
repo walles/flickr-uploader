@@ -37,7 +37,7 @@ public class Streams {
 			String base64 = new String(Base64UrlSafe.encodeBase64(bos.toByteArray()), "UTF-8");
 			return base64;
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 		return null;
 	}
@@ -52,7 +52,7 @@ public class Streams {
 			String base64 = new String(Base64UrlSafe.encodeBase64(bos.toByteArray()), "UTF-8");
 			return base64;
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 		return null;
 	}
@@ -73,11 +73,11 @@ public class Streams {
 			LOG.warn("StreamCorruptedException : " + e.getMessage());
 			readObject = e;
 		} catch (IOException e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		} catch (ClassNotFoundException e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		} catch (NullPointerException e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 			throw e;
 		} finally {
 			if (in != null) {

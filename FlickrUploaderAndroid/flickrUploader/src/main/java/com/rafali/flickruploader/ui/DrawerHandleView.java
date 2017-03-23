@@ -216,7 +216,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 				}
 			}
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 	}
 

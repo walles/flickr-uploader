@@ -66,6 +66,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.MessageDigest;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -155,7 +157,7 @@ public final class Utils {
 			try {
 				view_size = VIEW_SIZE.valueOf(Utils.getStringProperty("view_size", VIEW_SIZE.medium.toString()));
 			} catch (Exception e) {
-				LOG.error(ToolString.stack2string(e));
+				LOG.error("FIXME: Log message missing", e);
 				view_size = VIEW_SIZE.medium;
 			}
 		}
@@ -174,7 +176,7 @@ public final class Utils {
 			try {
 				view_group_type = VIEW_GROUP_TYPE.valueOf(Utils.getStringProperty("view_group_type", VIEW_GROUP_TYPE.date.toString()));
 			} catch (Exception e) {
-				LOG.error(ToolString.stack2string(e));
+				LOG.error("FIXME: Log message missing", e);
 				view_group_type = VIEW_GROUP_TYPE.date;
 			}
 		}
@@ -558,13 +560,13 @@ public final class Utils {
 							cursor.moveToNext();
 						}
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					}
 				}
 			}
 			t.setSuccessful(true);
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		} finally {
 			t.finish();
 			if (cursor != null)
@@ -652,7 +654,7 @@ public final class Utils {
 							bitmap = BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length);
 						}
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					}
 
 					if (bitmap == null) {
@@ -676,7 +678,7 @@ public final class Utils {
 			} catch (OutOfMemoryError e) {
                 LOG.warn("retry : {}, {}", retry, e.getMessage(), e);
 			} catch (Exception e) {
-				LOG.error(ToolString.stack2string(e));
+				LOG.error("FIXME: Log message missing", e);
 			} finally {
 				retry++;
 			}
@@ -771,7 +773,7 @@ public final class Utils {
 				}
 				t.setSuccessful(true);
 			} catch (Exception e) {
-				LOG.error(ToolString.stack2string(e));
+				LOG.error("FIXME: Log message missing", e);
 			} finally {
 				t.finish();
 			}
@@ -879,7 +881,7 @@ public final class Utils {
 			boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL;
 			setCharging(isCharging);
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 		return charging;
 	}
@@ -964,8 +966,12 @@ public final class Utils {
 									bW.write("premium : " + true);
 									bW.newLine();
 								} catch (Exception e) {
-									String stack2string = ToolString.stack2string(e);
-									LOG.error(stack2string);
+                                    StringWriter sw = new StringWriter();
+                                    PrintWriter pw = new PrintWriter(sw);
+                                    e.printStackTrace(pw);
+                                    String stack2string = sw.toString();
+
+									LOG.error("FIXME: Log message missing", e);
 									bW.write(stack2string);
 									bW.newLine();
 								} finally {
@@ -974,7 +980,7 @@ public final class Utils {
 											bW.flush();
 											bW.close();
 										} catch (Exception e) {
-											LOG.error(ToolString.stack2string(e));
+											LOG.error("FIXME: Log message missing", e);
 										}
 									}
 								}
@@ -1001,7 +1007,7 @@ public final class Utils {
 							activity.startActivity(Intent.createChooser(intent, "Send Feedback:"));
 						}
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					} finally {
 						showingEmailActivity = false;
 					}
@@ -1098,7 +1104,7 @@ public final class Utils {
 			String autoupload_delay = sp.getString("autoupload_delay", "delay0s");
 			return Long.valueOf(autoupload_delay.replaceAll("[^0-9.]", "")) * 1000L;
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 		return 0;
 	}

@@ -118,7 +118,7 @@ public class FlickrApi {
 						}
 					}
 				} catch (Exception e) {
-					LOG.error(ToolString.stack2string(e));
+					LOG.error("FIXME: Log message missing", e);
 				}
 			}
 		});
@@ -179,7 +179,7 @@ public class FlickrApi {
 									}
 									t.setSuccessful(true);
 								} catch (Exception e) {
-									LOG.error(ToolString.stack2string(e));
+									LOG.error("FIXME: Log message missing", e);
 								} finally {
 									t.finish();
 								}
@@ -214,17 +214,17 @@ public class FlickrApi {
 										media.setPrivacy(null);
 										media.save();
 									} else {
-										LOG.error(ToolString.stack2string(e));
+										LOG.error("FIXME: Log message missing", e);
 									}
 								} catch (Exception e) {
-									LOG.error(ToolString.stack2string(e));
+									LOG.error("FIXME: Log message missing", e);
 								}
 
 							}
 						}
 
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					}
 				}
 			});
@@ -361,7 +361,7 @@ public class FlickrApi {
 						FlickrApi.get().getPhotosInterface().setDates(media.getFlickrId(), date, date, "0");
 					}
 				} catch (Exception e) {
-					LOG.error(ToolString.stack2string(e));
+					LOG.error("FIXME: Log message missing", e);
 				}
 			}
 
@@ -487,7 +487,7 @@ public class FlickrApi {
 					try {
 						photosets = FlickrApi.get().getPhotosetsInterface().getList(Utils.getStringProperty(STR.userId)).getPhotosets();
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 						try {
 							Thread.sleep((long) (Math.pow(4, retry) * 1000L));
 						} catch (InterruptedException e1) {
@@ -517,7 +517,7 @@ public class FlickrApi {
 
 						t.setSuccessful(true);
 					} catch (Exception e) {
-						LOG.error(ToolString.stack2string(e));
+						LOG.error("FIXME: Log message missing", e);
 					} finally {
 						t.finish();
 					}
@@ -526,7 +526,7 @@ public class FlickrApi {
 			}
 			photoSets.putAll(cachedPhotoSets);
 		} catch (Exception e) {
-			LOG.error(ToolString.stack2string(e));
+			LOG.error("FIXME: Log message missing", e);
 		}
 		return photoSets;
 	}
@@ -548,7 +548,7 @@ public class FlickrApi {
 						return true;
 					}
 				} catch (Exception e) {
-					LOG.error(ToolString.stack2string(e));
+					LOG.error("FIXME: Log message missing", e);
 					try {
 						Thread.sleep((long) (Math.pow(4, retry) * 1000L));
 					} catch (InterruptedException e1) {
