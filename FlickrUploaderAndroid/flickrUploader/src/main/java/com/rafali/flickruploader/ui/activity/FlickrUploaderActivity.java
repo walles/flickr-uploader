@@ -297,7 +297,7 @@ public class FlickrUploaderActivity extends AppCompatActivity implements SwipeRe
     }
 
     Map<Media, Header> headerMap;
-    List<Header> headers;
+    List<Header> headers = Collections.emptyList();
     Map<String, Header> headerIds;
 
     @Override
