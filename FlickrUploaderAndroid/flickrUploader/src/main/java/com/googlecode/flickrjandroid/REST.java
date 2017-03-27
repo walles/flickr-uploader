@@ -166,7 +166,7 @@ public class REST extends Transport {
 			UploadThread uploadThread = uploadThreads.get(media);
             LOG.warn("killing {}, uploadThread={}", media, uploadThread);
 			if (uploadThread != null) {
-				uploadThread.kill();
+				uploadThread.kill(false);
 			}
 		} catch (Exception e) {
 			LOG.error("Error killing media upload", e);

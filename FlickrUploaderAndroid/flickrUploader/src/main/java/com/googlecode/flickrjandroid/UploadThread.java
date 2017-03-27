@@ -1,5 +1,7 @@
 package com.googlecode.flickrjandroid;
 
+import android.support.annotation.Nullable;
+
 import com.googlecode.flickrjandroid.uploader.ImageParameter;
 import com.googlecode.flickrjandroid.uploader.UploaderResponse;
 import com.rafali.common.ToolString;
@@ -21,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeoutException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +44,12 @@ class UploadThread {
     private HttpURLConnection conn = null;
     private InputStream in;
 
+    private final Object lock = new Object();
+
+    @Nullable
+    private Exception killedWithException = null;
+    private long uploadStartMs;
+
     UploadThread(Media media, URL url, List<Parameter> parameters) throws ParserConfigurationException {
         this.media = media;
         this.parameters = parameters;
@@ -57,8 +66,6 @@ class UploadThread {
         });
         thread.setName("Upload <" + media.getName() + ">");
     }
-
-    private boolean killed = false;
 
     private static void reportProgress(Media media, int progress) {
         media.setProgress(progress);
@@ -116,8 +123,16 @@ class UploadThread {
         out.writeBytes(boundary);
     }
 
-    public void kill() {
-        killed = true;
+    public void kill(boolean isTimeout) {
+        synchronized (lock) {
+            if (isTimeout) {
+                long dt = System.currentTimeMillis() - uploadStartMs;
+                killedWithException = new TimeoutException("Upload timed out after " + dt + "ms");
+            } else {
+                killedWithException = new InterruptedException("Upload killed");
+            }
+        }
+
         if (conn != null) {
             try {
                 conn.setConnectTimeout(50);
@@ -131,9 +146,7 @@ class UploadThread {
         }
         if (in != null) {
             try {
-                LOG.warn("closing InputStream");
                 in.close();
-                LOG.warn("InputStream closed");
             } catch (Exception e) {
                 LOG.error("Closing InputStream failed", e);
             }
@@ -177,7 +190,7 @@ class UploadThread {
                             ToolString.formatDuration(System.currentTimeMillis()
                                     - media.getTimestampUploadStarted()));
 
-                    kill();
+                    kill(true);
                 }
             }
         });
@@ -186,12 +199,16 @@ class UploadThread {
     }
 
     private void setResponse(Object response) {
-        if (this.response != null) {
-            LOG.warn("Upload response set multiple times",
-                    new RuntimeException("Upload response already set to <" + response + ">, not resetting"));
-        }
+        synchronized (lock) {
+            if (this.response != null) {
+                //noinspection AccessToStaticFieldLockedOnInstance
+                LOG.warn("Upload response set multiple times",
+                        new RuntimeException("Upload response already set to <" + response
+                                + ">, not resetting"));
+            }
 
-        this.response = response;
+            this.response = response;
+        }
     }
 
     private void run() {
@@ -265,40 +282,28 @@ class UploadThread {
             }
 
             reportProgress(media, LIMIT + 1);
-            int responseCode = -1;
-            try {
-                responseCode = conn.getResponseCode();
-            } catch (IOException e) {
-                LOG.error("Failed to get the POST response code", e);
-                try (InputStream errorStream = conn.getErrorStream()) {
-                    if (errorStream != null) {
-                        responseCode = conn.getResponseCode();
-                    }
-                }
-                setResponse(e);
-            } finally {
-                reportProgress(media, 999);
-            }
+            int responseCode = conn.getResponseCode();
             if (responseCode < 0) {
-                LOG.error("some error occured : {}", responseCode);
+                throw new IOException("Upload error: " + responseCode);
             } else if ((responseCode != HttpURLConnection.HTTP_OK)) {
                 String errorMessage = REST.readFromStream(conn.getErrorStream());
                 String detailMessage = "Connection Failed. Response Code: " + responseCode
                         + ", Response Message: " + conn.getResponseMessage() + ", Error: "
                         + errorMessage;
-                LOG.error("detailMessage : {}", detailMessage);
                 throw new IOException(detailMessage);
             }
-            if (killed) {
-                LOG.warn("thread was killed");
-                setResponse(new UploadService.UploadException("upload cancelled by user", false));
-            } else {
-                UploaderResponse response = new UploaderResponse();
-                in = conn.getInputStream();
-                Document document = builder.parse(in);
-                response.parse(document);
-                setResponse(response);
+
+            synchronized (lock) {
+                if (killedWithException != null) {
+                    throw new UploadService.UploadException("upload canceled by user", false);
+                }
             }
+
+            UploaderResponse response = new UploaderResponse();
+            in = conn.getInputStream();
+            Document document = builder.parse(in);
+            response.parse(document);
+            setResponse(response);
         } catch (Exception e) {
             setResponse(e);
         } finally {
@@ -315,6 +320,9 @@ class UploadThread {
 
     public Response doUpload() throws IOException, FlickrException, SAXException
     {
+        synchronized (lock) {
+            uploadStartMs = System.currentTimeMillis();
+        }
         thread.start();
 
         try {
@@ -323,20 +331,39 @@ class UploadThread {
             throw new IOException("Interrupted waiting for upload to finish", e);
         }
 
-        LOG.debug("response : {}", response);
+        synchronized (lock) {
+            if (killedWithException != null) {
+                if (response == null) {
+                    response = killedWithException;
+                } else if (!(response instanceof Throwable)) {
+                    // We have some kind of response for the killed thread, just overwrite it
+                    response = killedWithException;
+                } else {
+                    // Response is some kind of exception, add the kill reason as the ultimate cause
+                    Throwable throwable = (Throwable) response;
+                    while (throwable.getCause() != null) {
+                        throwable = throwable.getCause();
+                    }
+                    throwable.initCause(killedWithException);
+                }
+            }
 
-        if (response instanceof Response) {
-            return (Response) response;
-        } else if (response instanceof IOException) {
-            throw (IOException) response;
-        } else if (response instanceof FlickrException) {
-            throw (FlickrException) response;
-        } else if (response instanceof SAXException) {
-            throw (SAXException) response;
-        } else if (response instanceof Throwable) {
-            Throwable throwable = (Throwable) response;
-            throw new UploadService.UploadException(throwable.getMessage(), throwable);
+            //noinspection AccessToStaticFieldLockedOnInstance
+            LOG.debug("response : {}", response);
+
+            if (response instanceof Response) {
+                return (Response) response;
+            } else if (response instanceof IOException) {
+                throw (IOException) response;
+            } else if (response instanceof FlickrException) {
+                throw (FlickrException) response;
+            } else if (response instanceof SAXException) {
+                throw (SAXException) response;
+            } else if (response instanceof Throwable) {
+                Throwable throwable = (Throwable) response;
+                throw new UploadService.UploadException(throwable.getMessage(), throwable);
+            }
+            return null;
         }
-        return null;
     }
 }
