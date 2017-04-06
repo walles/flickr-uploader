@@ -35,7 +35,7 @@ class CrashlyticsAppender extends AppenderBase<ILoggingEvent> {
             return;
         }
 
-        Crashlytics.log(eventObject.getMessage());
+        Crashlytics.log(eventObject.getFormattedMessage());
 
         IThrowableProxy throwableProxy = eventObject.getThrowableProxy();
         if (throwableProxy == null) {
