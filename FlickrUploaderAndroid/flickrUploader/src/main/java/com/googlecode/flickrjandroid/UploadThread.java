@@ -332,6 +332,8 @@ class UploadThread {
         }
 
         synchronized (lock) {
+            long dtMs = System.currentTimeMillis() - uploadStartMs;
+
             if (killedWithException != null) {
                 if (response == null) {
                     response = killedWithException;
@@ -346,6 +348,11 @@ class UploadThread {
                     }
                     throwable.initCause(killedWithException);
                 }
+            }
+
+            if (response instanceof Throwable) {
+                //noinspection AccessToStaticFieldLockedOnInstance
+                LOG.info("Upload exceptioned after {}ms", dtMs);
             }
 
             //noinspection AccessToStaticFieldLockedOnInstance
