@@ -332,25 +332,17 @@ class UploadThread {
         }
 
         synchronized (lock) {
-            long dtMs = System.currentTimeMillis() - uploadStartMs;
+            if (response instanceof Response) {
+                return (Response) response;
+            }
 
             if (killedWithException != null) {
-                if (response == null) {
-                    response = killedWithException;
-                } else if (!(response instanceof Throwable)) {
-                    // We have some kind of response for the killed thread, just overwrite it
-                    response = killedWithException;
-                } else {
-                    // Response is some kind of exception, add the kill reason as the ultimate cause
-                    Throwable throwable = (Throwable) response;
-                    while (throwable.getCause() != null) {
-                        throwable = throwable.getCause();
-                    }
-                    throwable.initCause(killedWithException);
-                }
+                // We were killed, just report the kill reason
+                response = killedWithException;
             }
 
             if (response instanceof Throwable) {
+                long dtMs = System.currentTimeMillis() - uploadStartMs;
                 //noinspection AccessToStaticFieldLockedOnInstance
                 LOG.info("Upload exceptioned after {}ms", dtMs);
             }
@@ -358,9 +350,7 @@ class UploadThread {
             //noinspection AccessToStaticFieldLockedOnInstance
             LOG.debug("response : {}", response);
 
-            if (response instanceof Response) {
-                return (Response) response;
-            } else if (response instanceof IOException) {
+            if (response instanceof IOException) {
                 throw (IOException) response;
             } else if (response instanceof FlickrException) {
                 throw (FlickrException) response;
@@ -368,7 +358,8 @@ class UploadThread {
                 throw (SAXException) response;
             } else if (response instanceof Throwable) {
                 Throwable throwable = (Throwable) response;
-                throw new UploadService.UploadException(throwable.getMessage(), throwable);
+                throw new UploadService.UploadException(
+                        throwable.getClass().getSimpleName() + ": " + throwable.getMessage(), throwable);
             }
             return null;
         }
