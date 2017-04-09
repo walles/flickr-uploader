@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
+import android.text.TextUtils;
 
 import com.crashlytics.android.answers.CustomEvent;
 import com.googlecode.flickrjandroid.FlickrException;
@@ -451,13 +452,15 @@ public class UploadService extends Service {
 
 		@Override
 		public String getMessage() {
-			String retryability;
-			if (isRetryable()) {
-				retryability = "retryable";
-			} else {
-				retryability = "not retryable";
-			}
-			return super.getMessage() + " (" + retryability + ")";
+			String message = super.getMessage();
+            if (TextUtils.isEmpty(message) && getCause() != null) {
+                message = getCause().getClass().getSimpleName() + ": " + getCause().getMessage();
+            }
+
+            if (message == null) {
+                message = "<MESSAGE NOT SET>";
+            }
+			return message + " (retryable=" + isRetryable() + ", isNetworkError=" + isNetworkError() + ")";
 		}
 
 		public boolean isRetryable() {
@@ -490,6 +493,11 @@ public class UploadService extends Service {
 				return false;
 			}
 
+			if (e instanceof InterruptedException) {
+				LOG.debug("Not retryable, is InterruptedException");
+				return false;
+			}
+
 			if (e instanceof RuntimeException && e.getCause() != null) {
 				LOG.debug("Unknown retryability, checking cause...");
 				return isRetryable(e.getCause());
@@ -499,11 +507,11 @@ public class UploadService extends Service {
 			return true;
 		}
 
-		public boolean isNetworkError() {
+		private boolean isNetworkError() {
 			return isNetworkError(getCause());
 		}
 
-		private boolean isNetworkError(Throwable e) {
+		private static boolean isNetworkError(Throwable e) {
 			if (e instanceof UnknownHostException) {
 				return true;
 			} else if (e instanceof SocketException) {
