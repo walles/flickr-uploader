@@ -493,11 +493,6 @@ public class UploadService extends Service {
 				return false;
 			}
 
-			if (e instanceof InterruptedException) {
-				LOG.debug("Not retryable, is InterruptedException");
-				return false;
-			}
-
 			if (e instanceof RuntimeException && e.getCause() != null) {
 				LOG.debug("Unknown retryability, checking cause...");
 				return isRetryable(e.getCause());
