@@ -361,7 +361,7 @@ public class FlickrApi {
 						FlickrApi.get().getPhotosInterface().setDates(media.getFlickrId(), date, date, "0");
 					}
 				} catch (Exception e) {
-					LOG.error("FIXME: Log message missing", e);
+					LOG.warn("Timestamping photo failed, ignoring...", e);
 				}
 			}
 

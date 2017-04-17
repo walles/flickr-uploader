@@ -691,7 +691,7 @@ public class UploadService extends Service {
 						}
 					}
 				} catch (Exception e) {
-					LOG.error("FIXME: Log message missing", e);
+					LOG.error("Checking for new files failed", e);
 				}
 			}
 		}, "checkNewFiles", "checkNewFiles");
