@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 class UploadThread {
     private static final Logger LOG = LoggerFactory.getLogger(UploadThread.class);
     private static final int LIMIT = 970;
+    private static final int TIMEOUT_MS = 2 * 60_000;
 
     private final Media media;
     private final List<Parameter> parameters;
@@ -166,7 +167,7 @@ class UploadThread {
                 long lastProgressChange = System.currentTimeMillis();
                 int lastProgress = 0;
                 while (thread.isAlive() && !thread.isInterrupted() && media.getProgress() < 999
-                        && System.currentTimeMillis() - lastProgressChange < 2 * 60 * 1000L) {
+                        && System.currentTimeMillis() - lastProgressChange < TIMEOUT_MS) {
                     if (media.getProgress() > LIMIT) {
                         reportProgress(media, Math.min(998, media.getProgress() + 1));
                     }
@@ -219,6 +220,8 @@ class UploadThread {
                 LOG.debug("Post URL: {}", url);
             }
             conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(TIMEOUT_MS);
+            conn.setReadTimeout(TIMEOUT_MS);
             conn.setRequestMethod("POST");
 
             String boundary = "---------------------------7d273f7a0d3";
@@ -310,6 +313,8 @@ class UploadThread {
             try {
                 reportProgress(media, 1000);
                 if (conn != null) {
+                    conn.setConnectTimeout(50);
+                    conn.setReadTimeout(50);
                     conn.disconnect();
                 }
             } catch (Exception e) {

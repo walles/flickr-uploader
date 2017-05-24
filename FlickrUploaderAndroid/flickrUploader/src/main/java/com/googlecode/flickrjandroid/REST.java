@@ -85,8 +85,11 @@ public class REST extends Transport {
 		}
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		if (url.toString().contains("method=flickr.test.echo")) {
-			conn.setConnectTimeout(5000);
-			conn.setReadTimeout(5000);
+			conn.setConnectTimeout(5_000);
+			conn.setReadTimeout(5_000);
+		} else {
+            conn.setConnectTimeout(50_000);
+            conn.setReadTimeout(50_000);
 		}
 		conn.addRequestProperty("Cache-Control", "no-cache,max-age=0");
 		conn.addRequestProperty("Pragma", "no-cache");
@@ -197,12 +200,13 @@ public class REST extends Transport {
             if (parameter.getName().equalsIgnoreCase("method")) {
                 method = (String) parameter.getValue();
                 if (method.equals("flickr.test.echo")) {
-                    timeout = 5000;
+                    timeout = Math.max(timeout, 5_000);
                 }
             } else if (parameter.getName().equalsIgnoreCase("machine_tags") && ((String) parameter.getValue()).contains("file:md5sum")) {
-                timeout = 10000;
+                timeout = Math.max(timeout, 10_000);
             }
         }
+        timeout = Math.max(timeout, 60_000);
 		if (BuildConfig.DEBUG) {
             LOG.debug("API {}, timeout={}", method, timeout);
             LOG.trace("Send Post Input Params: path '{}'; parameters {}", path, parameters);
@@ -225,10 +229,8 @@ public class REST extends Transport {
             conn.setUseCaches(false);
             conn.setDoOutput(true);
             conn.setDoInput(true);
-            if (timeout > 0) {
-                conn.setConnectTimeout(timeout);
-                conn.setReadTimeout(timeout);
-            }
+            conn.setConnectTimeout(timeout);
+            conn.setReadTimeout(timeout);
             conn.connect();
             try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
                 out.write(bytes);
