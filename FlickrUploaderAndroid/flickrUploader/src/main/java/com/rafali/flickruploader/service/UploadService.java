@@ -305,7 +305,7 @@ public class UploadService extends Service {
 							uploadProgressListener.onProcessed(mediaPreviouslyUploading);
 						}
 						mediaPreviouslyUploading = null;
-						if (mediaCurrentlyUploading == null) {
+						if (nothingCurrentlyUploading()) {
 							onUploadFinished();
 							FlickrUploader.cleanLogs();
 						}
@@ -313,7 +313,7 @@ public class UploadService extends Service {
 
 					CAN_UPLOAD canUploadNow = Utils.canUploadNow();
 
-					if (mediaCurrentlyUploading == null || canUploadNow != CAN_UPLOAD.ok) {
+					if (nothingCurrentlyUploading() || canUploadNow != CAN_UPLOAD.ok) {
 						paused = true;
 
                         waitForWork();
@@ -345,7 +345,7 @@ public class UploadService extends Service {
 								}
 							}
 
-							if (mediaCurrentlyUploading == null) {
+							if (nothingCurrentlyUploading()) {
 								continue;
 							}
 
@@ -428,6 +428,10 @@ public class UploadService extends Service {
 			stopSelf();
 		}
 
+        private boolean nothingCurrentlyUploading() {
+            return mediaCurrentlyUploading == null;
+        }
+
         // This method should be called from a loop, in which case this warning isn't valid
         @SuppressWarnings("WaitNotInLoop")
         private void waitForWork() throws InterruptedException {
@@ -436,7 +440,7 @@ public class UploadService extends Service {
                 FlickrUploaderActivity uploaderActivity =
                         FlickrUploaderActivity.getInstance();
 
-                if (mediaCurrentlyUploading == null) {
+                if (nothingCurrentlyUploading()) {
                     if ((uploaderActivity == null || uploaderActivity.isPaused()) && !Utils.canAutoUploadBool()
                             && System.currentTimeMillis() - lastUpload > 5 * 60_000) {
                         running = false;
