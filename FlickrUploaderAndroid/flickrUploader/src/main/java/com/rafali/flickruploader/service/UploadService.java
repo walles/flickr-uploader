@@ -119,7 +119,9 @@ public class UploadService extends Service {
 		super.onCreate();
 		instance = this;
 		LOG.debug("Service created…");
-		running = true;
+		synchronized (mPauseLock) {
+            running = true;
+        }
 		getContentResolver().registerContentObserver(Images.Media.EXTERNAL_CONTENT_URI, true, imageTableObserver);
 		getContentResolver().registerContentObserver(Video.Media.EXTERNAL_CONTENT_URI, true, imageTableObserver);
 
@@ -159,12 +161,16 @@ public class UploadService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		destroyed = true;
-		LOG.debug("Service destroyed… started {} ago",
-				ToolString.formatDuration(System.currentTimeMillis() - started));
+        synchronized (mPauseLock) {
+            LOG.debug("Service destroyed… started {} ago",
+                    ToolString.formatDuration(System.currentTimeMillis() - started));
+        }
 		if (instance == this) {
 			instance = null;
 		}
-		running = false;
+		synchronized (mPauseLock) {
+            running = false;
+        }
 		unregisterReceiver(batteryReceiver);
 		getContentResolver().unregisterContentObserver(imageTableObserver);
 	}
@@ -283,7 +289,13 @@ public class UploadService extends Service {
 		@SuppressWarnings("deprecation")
 		@Override
 		public void run() {
-			while (running) {
+			while (true) {
+                synchronized (mPauseLock) {
+                    if (!running) {
+                        break;
+                    }
+                }
+
 				try {
 					mediaCurrentlyUploading = checkQueue();
 
@@ -419,7 +431,9 @@ public class UploadService extends Service {
 
 						} else {
 							Notifications.clear();
-							running = false;
+                            synchronized (mPauseLock) {
+                                running = false;
+                            }
 						}
 					}
 
