@@ -318,7 +318,10 @@ public class UploadService extends Service {
 						synchronized (mPauseLock) {
 							// LOG.debug("waiting for work");
 							if (mediaCurrentlyUploading == null) {
-								if ((FlickrUploaderActivity.getInstance() == null || FlickrUploaderActivity.getInstance().isPaused()) && !Utils.canAutoUploadBool()
+
+                                FlickrUploaderActivity uploaderActivity =
+                                        FlickrUploaderActivity.getInstance();
+                                if ((uploaderActivity == null || uploaderActivity.isPaused()) && !Utils.canAutoUploadBool()
 										&& System.currentTimeMillis() - lastUpload > 5 * 60 * 1000) {
 									running = false;
 									LOG.debug("stopping service after waiting for 5 minutes");
@@ -334,14 +337,15 @@ public class UploadService extends Service {
 									}
 								}
 							} else {
-								if (FlickrUploaderActivity.getInstance() != null && !FlickrUploaderActivity.getInstance().isPaused()) {
+                                FlickrUploaderActivity uploaderActivity =
+                                        FlickrUploaderActivity.getInstance();
+                                if (uploaderActivity != null && !uploaderActivity.isPaused()) {
 									mPauseLock.wait(2000);
 								} else {
 									mPauseLock.wait(60000);
 								}
 							}
 						}
-
 					} else {
 						paused = false;
 						if (FlickrApi.isAuthentified()) {
