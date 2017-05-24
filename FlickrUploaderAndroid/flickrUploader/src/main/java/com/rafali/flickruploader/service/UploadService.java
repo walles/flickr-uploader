@@ -287,7 +287,6 @@ public class UploadService extends Service {
 	private static int nbNetworkRetries = 0;
 
 	private class UploadRunnable implements Runnable {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void run() {
 			while (true) {
@@ -298,121 +297,8 @@ public class UploadService extends Service {
                 }
 
 				try {
-					mediaCurrentlyUploading = checkQueue();
-
-					if (mediaPreviouslyUploading != null) {
-						for (UploadProgressListener uploadProgressListener : uploadProgressListeners) {
-							uploadProgressListener.onProcessed(mediaPreviouslyUploading);
-						}
-						mediaPreviouslyUploading = null;
-						if (nothingCurrentlyUploading()) {
-							onUploadFinished();
-							FlickrUploader.cleanLogs();
-						}
-					}
-
-					CAN_UPLOAD canUploadNow = Utils.canUploadNow();
-
-					if (nothingCurrentlyUploading() || canUploadNow != CAN_UPLOAD.ok) {
-						paused = true;
-
-                        waitForWork();
-                    } else {
-						paused = false;
-						if (FlickrApi.isAuthentified()) {
-							long start = System.currentTimeMillis();
-							mediaCurrentlyUploading.setProgress(0);
-							onUploadProgress(mediaCurrentlyUploading);
-							ConnectivityManager cm = (ConnectivityManager) FlickrUploader.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-							if (STR.wifionly.equals(Utils.getStringProperty(PreferencesActivity.UPLOAD_NETWORK))) {
-								cm.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
-							} else {
-								cm.setNetworkPreference(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
-							}
-
-							while (mediaCurrentlyUploading.getTimestampRetry() < Long.MAX_VALUE && System.currentTimeMillis() < mediaCurrentlyUploading.getTimestampRetry()) {
-								synchronized (mPauseLock) {
-									long pausems = Math.max(1000, mediaCurrentlyUploading.getTimestampRetry() - System.currentTimeMillis());
-									LOG.debug("pausing for {}s before uploading", pausems / 1000);
-									mPauseLock.wait(pausems);
-									Media topQueued = checkQueue();
-									if (!Objects.equals(topQueued, mediaCurrentlyUploading)) {
-										LOG.info("topQueued:{}, mediaCurrentlyUploading:{}",
-												topQueued, mediaCurrentlyUploading);
-										mediaCurrentlyUploading = null;
-										break;
-									}
-								}
-							}
-
-							if (nothingCurrentlyUploading()) {
-								continue;
-							}
-
-							if (mediaCurrentlyUploading.getRetries() > 0) {
-
-								boolean networkOk = FlickrApi.isNetworkOk();
-								LOG.debug("retry={}, networkOk={}",
-										mediaCurrentlyUploading.getRetries(), networkOk);
-								if (!networkOk) {
-									nbNetworkRetries++;
-									long waitingtime = (long) Math.min(3600 * 1000L, Math.max(10000L, Math.pow(2, nbNetworkRetries) * 1000L));
-									LOG.warn(
-											"network not ready yet, retrying in {}s, "
-													+ "nbNetworkRetries={}",
-											waitingtime / 1000, nbNetworkRetries);
-									mediaCurrentlyUploading.setTimestampRetry(System.currentTimeMillis() + waitingtime);
-									mediaCurrentlyUploading.save();
-									continue;
-								}
-							}
-
-							UploadException exc = null;
-							try {
-								LOG.debug("Starting upload : {}", mediaCurrentlyUploading);
-								mediaCurrentlyUploading.setTimestampUploadStarted(start);
-								FlickrApi.upload(mediaCurrentlyUploading);
-							} catch (UploadException e) {
-								LOG.error("Upload failed", e);
-								exc = e;
-							}
-							long time = System.currentTimeMillis() - start;
-
-							if (exc == null) {
-								nbNetworkRetries = 0;
-                                synchronized (mPauseLock) {
-                                    lastUpload = System.currentTimeMillis();
-                                }
-								LOG.debug("Upload success : {}ms {}", time,
-										mediaCurrentlyUploading);
-								mediaCurrentlyUploading.setStatus(STATUS.UPLOADED);
-
-								LoggingUtils.logCustom(
-										new CustomEvent("Upload Finished").putCustomAttribute("Duration ms", time));
-							} else {
-								mediaCurrentlyUploading.setTimestampUploadStarted(0);
-								mediaCurrentlyUploading.setErrorMessage(exc.getMessage());
-								int newretries = mediaCurrentlyUploading.getRetries() + 1;
-								mediaCurrentlyUploading.setRetries(newretries);
-								if (exc.isRetryable()) {
-									LOG.warn("Upload fail in {}ms : {}, newretries={}", time,
-											mediaCurrentlyUploading, newretries);
-									if (newretries >= 9) {
-										mediaCurrentlyUploading.setStatus(STATUS.FAILED);
-									}
-								} else {
-									mediaCurrentlyUploading.setStatus(STATUS.FAILED);
-								}
-							}
-							mediaCurrentlyUploading.save();
-
-						} else {
-							Notifications.clear();
-                            synchronized (mPauseLock) {
-                                running = false;
-                            }
-						}
-					}
+                    doOneIteration();
+                    continue;
 
 				} catch (InterruptedException e) {
 					LOG.warn("Thread interrupted");
@@ -427,6 +313,127 @@ public class UploadService extends Service {
 			}
 			stopSelf();
 		}
+
+        @SuppressWarnings("deprecation")
+        private void doOneIteration() throws InterruptedException {
+            mediaCurrentlyUploading = checkQueue();
+
+            if (mediaPreviouslyUploading != null) {
+                for (UploadProgressListener uploadProgressListener : uploadProgressListeners) {
+                    uploadProgressListener.onProcessed(mediaPreviouslyUploading);
+                }
+                mediaPreviouslyUploading = null;
+                if (nothingCurrentlyUploading()) {
+                    onUploadFinished();
+                    FlickrUploader.cleanLogs();
+                }
+            }
+
+            CAN_UPLOAD canUploadNow = Utils.canUploadNow();
+
+            if (nothingCurrentlyUploading() || canUploadNow != CAN_UPLOAD.ok) {
+                paused = true;
+
+                waitForWork();
+                return;
+            }
+
+            paused = false;
+            if (!FlickrApi.isAuthentified()) {
+                Notifications.clear();
+                synchronized (mPauseLock) {
+                    running = false;
+                }
+                return;
+            }
+
+            long start = System.currentTimeMillis();
+            mediaCurrentlyUploading.setProgress(0);
+            onUploadProgress(mediaCurrentlyUploading);
+            ConnectivityManager cm = (ConnectivityManager)
+                    FlickrUploader.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (STR.wifionly.equals(Utils.getStringProperty(PreferencesActivity.UPLOAD_NETWORK))) {
+                cm.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
+            } else {
+                cm.setNetworkPreference(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
+            }
+
+            while (mediaCurrentlyUploading.getTimestampRetry() < Long.MAX_VALUE && System.currentTimeMillis() < mediaCurrentlyUploading.getTimestampRetry()) {
+                synchronized (mPauseLock) {
+                    long pausems = Math.max(1000, mediaCurrentlyUploading.getTimestampRetry() - System.currentTimeMillis());
+                    LOG.debug("pausing for {}s before uploading", pausems / 1000);
+                    mPauseLock.wait(pausems);
+                    Media topQueued = checkQueue();
+                    if (!Objects.equals(topQueued, mediaCurrentlyUploading)) {
+                        LOG.info("topQueued:{}, mediaCurrentlyUploading:{}",
+                                topQueued, mediaCurrentlyUploading);
+                        mediaCurrentlyUploading = null;
+                        break;
+                    }
+                }
+            }
+
+            if (mediaCurrentlyUploading == null) {
+                return;
+            }
+
+            if (mediaCurrentlyUploading.getRetries() > 0) {
+                boolean networkOk = FlickrApi.isNetworkOk();
+                LOG.debug("retry={}, networkOk={}",
+                        mediaCurrentlyUploading.getRetries(), networkOk);
+                if (!networkOk) {
+                    nbNetworkRetries++;
+                    long waitingtime = (long) Math.min(3600 * 1000L, Math.max(10000L, Math.pow(2, nbNetworkRetries) * 1000L));
+                    LOG.warn(
+                            "network not ready yet, retrying in {}s, "
+                                    + "nbNetworkRetries={}",
+                            waitingtime / 1000, nbNetworkRetries);
+                    mediaCurrentlyUploading.setTimestampRetry(System.currentTimeMillis()
+                            + waitingtime);
+                    mediaCurrentlyUploading.save();
+                    return;
+                }
+            }
+
+            UploadException exc = null;
+            try {
+                LOG.debug("Starting upload : {}", mediaCurrentlyUploading);
+                mediaCurrentlyUploading.setTimestampUploadStarted(start);
+                FlickrApi.upload(mediaCurrentlyUploading);
+            } catch (UploadException e) {
+                LOG.error("Upload failed", e);
+                exc = e;
+            }
+            long time = System.currentTimeMillis() - start;
+
+            if (exc == null) {
+                nbNetworkRetries = 0;
+                synchronized (mPauseLock) {
+                    lastUpload = System.currentTimeMillis();
+                }
+                LOG.debug("Upload success : {}ms {}", time,
+                        mediaCurrentlyUploading);
+                mediaCurrentlyUploading.setStatus(STATUS.UPLOADED);
+
+                LoggingUtils.logCustom(
+                        new CustomEvent("Upload Finished").putCustomAttribute("Duration ms", time));
+            } else {
+                mediaCurrentlyUploading.setTimestampUploadStarted(0);
+                mediaCurrentlyUploading.setErrorMessage(exc.getMessage());
+                int newretries = mediaCurrentlyUploading.getRetries() + 1;
+                mediaCurrentlyUploading.setRetries(newretries);
+                if (exc.isRetryable()) {
+                    LOG.warn("Upload fail in {}ms : {}, newretries={}", time,
+                            mediaCurrentlyUploading, newretries);
+                    if (newretries >= 9) {
+                        mediaCurrentlyUploading.setStatus(STATUS.FAILED);
+                    }
+                } else {
+                    mediaCurrentlyUploading.setStatus(STATUS.FAILED);
+                }
+            }
+            mediaCurrentlyUploading.save();
+        }
 
         private boolean nothingCurrentlyUploading() {
             return mediaCurrentlyUploading == null;
