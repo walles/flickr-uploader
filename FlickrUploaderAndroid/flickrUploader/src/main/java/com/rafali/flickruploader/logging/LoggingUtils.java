@@ -53,9 +53,13 @@ public class LoggingUtils {
 
     private static boolean isCrashlyticsEnabled() {
         if (EmulatorUtils.IS_ON_EMULATOR) {
+            // When running in the emulator, we assume there will be a debugger attached, and a
+            // human watching the logs
             return false;
         }
+
         if (!EmulatorUtils.IS_ON_ANDROID) {
+            // Not on Android => unit tests running => result will be seen by a human anyway
             return false;
         }
 
@@ -81,14 +85,6 @@ public class LoggingUtils {
         Answers.getInstance().logLogin(event);
     }
 
-    public static void logException(Throwable t) {
-        if (!IS_CRASHLYTICS_ENABLED) {
-            return;
-        }
-
-        Crashlytics.logException(t);
-    }
-
     public static void setUpLogging(Context context) {
         if (IS_CRASHLYTICS_ENABLED) {
             // Note that Crashlytics implicitly adds Answers as well, and mentioning Answers here
@@ -106,21 +102,21 @@ public class LoggingUtils {
     }
 
     private static void initLogs(Context context) {
-        Logger logbackLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        Logger logbackLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         LoggerContext lc = logbackLogger.getLoggerContext();
 
         Logger rootLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
         rootLogger.detachAndStopAllAppenders();
 
-        TimeBasedRollingPolicy<ILoggingEvent> rollingPolicy = new TimeBasedRollingPolicy<ILoggingEvent>();
+        TimeBasedRollingPolicy<ILoggingEvent> rollingPolicy = new TimeBasedRollingPolicy<>();
         rollingPolicy.setMaxHistory(3);
-        SizeAndTimeBasedFNATP<ILoggingEvent> sizeAndTimeBasedFNATP = new SizeAndTimeBasedFNATP<ILoggingEvent>();
+        SizeAndTimeBasedFNATP<ILoggingEvent> sizeAndTimeBasedFNATP = new SizeAndTimeBasedFNATP<>();
         sizeAndTimeBasedFNATP.setMaxFileSize("2MB");
         rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(sizeAndTimeBasedFNATP);
         rollingPolicy.setFileNamePattern(context.getFilesDir().getPath() + "/logs/old/flickruploader.%d{yyyy-MM-dd}.%i.log");
         rollingPolicy.setContext(lc);
 
-        RollingFileAppender<ILoggingEvent> fileAppender = new RollingFileAppender<ILoggingEvent>();
+        RollingFileAppender<ILoggingEvent> fileAppender = new RollingFileAppender<>();
         fileAppender.setContext(lc);
         fileAppender.setFile(getLogFilePath());
         fileAppender.setRollingPolicy(rollingPolicy);

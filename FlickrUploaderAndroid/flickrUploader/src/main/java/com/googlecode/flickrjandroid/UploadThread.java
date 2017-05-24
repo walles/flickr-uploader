@@ -204,7 +204,7 @@ class UploadThread {
             if (this.response != null) {
                 //noinspection AccessToStaticFieldLockedOnInstance
                 LOG.warn("Upload response set multiple times",
-                        new RuntimeException("Upload response already set to <" + response
+                        new RuntimeException("Upload response already set to <" + this.response
                                 + ">, not resetting"));
             }
 
@@ -298,7 +298,7 @@ class UploadThread {
 
             synchronized (lock) {
                 if (killedWithException != null) {
-                    throw new UploadService.UploadException("upload canceled by user", false);
+                    throw new UploadService.UploadException("upload failed with exception", killedWithException);
                 }
             }
 
