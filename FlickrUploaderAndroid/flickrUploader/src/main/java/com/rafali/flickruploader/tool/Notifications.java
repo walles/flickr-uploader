@@ -91,7 +91,7 @@ public class Notifications {
 
 			lastUpdate = System.currentTimeMillis();
 
-			int currentPosition = UploadService.getRecentlyUploaded().size();
+			int currentPosition = UploadService.getRecentlyUploadedSize();
 			int total = UploadService.getNbTotal();
 			int progress = media.getProgress();
 
@@ -130,7 +130,8 @@ public class Notifications {
 	private static void notifyFinished(int nbUploaded, int nbError) {
 		try {
 			manager.cancelAll();
-			if (FlickrUploaderActivity.getInstance() == null || FlickrUploaderActivity.getInstance().isPaused()) {
+			FlickrUploaderActivity uploaderActivity = FlickrUploaderActivity.getInstance();
+			if (uploaderActivity == null || uploaderActivity.isPaused()) {
 
 				if (!Utils.getBooleanProperty("notification_finished", true)) {
 					return;

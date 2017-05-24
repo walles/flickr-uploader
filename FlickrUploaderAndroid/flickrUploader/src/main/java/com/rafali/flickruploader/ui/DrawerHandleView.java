@@ -1,5 +1,12 @@
 package com.rafali.flickruploader.ui;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.AttributeSet;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import com.rafali.common.STR;
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.api.FlickrApi;
@@ -18,21 +25,15 @@ import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
 
 @EViewGroup(R.layout.drawer_handle_view)
 public class DrawerHandleView extends LinearLayout implements UploadProgressListener {
 
-	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DrawerHandleView.class);
+	static final Logger LOG = LoggerFactory.getLogger(DrawerHandleView.class);
 
 	public DrawerHandleView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -92,7 +93,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 		progressContainer.setVisibility(View.GONE);
 		message.setVisibility(View.VISIBLE);
 		message.setText(text);
-		LOG.debug("message:" + text + ", duration:" + duration);
+		LOG.debug("message:{}, duration:{}", text, duration);
 	}
 
 	int nbMonitored = -1;
@@ -125,7 +126,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 						setMessage("Login into Flickr from the Preferences");
 					} else if (UploadService.getCurrentlyQueued().size() == 0) {
 						String text = "No media queued";
-						int nbUploaded = UploadService.getRecentlyUploaded().size();
+						int nbUploaded = UploadService.getRecentlyUploadedSize();
 						if (nbUploaded > 0) {
 							text += ", " + nbUploaded + " recently uploaded";
 						}
@@ -163,7 +164,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 							if (media == null) {
 								setMessage("Uploading " + UploadService.getCurrentlyQueued().size() + " media");
 							} else {
-								int currentPosition = UploadService.getRecentlyUploaded().size();
+								int currentPosition = UploadService.getRecentlyUploadedSize();
 								int total = UploadService.getNbTotal();
 								int progress = media.getProgress();
 								progressContainer.setVisibility(View.VISIBLE);

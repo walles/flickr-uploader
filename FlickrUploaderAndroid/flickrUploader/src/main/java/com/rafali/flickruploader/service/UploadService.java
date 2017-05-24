@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -604,7 +605,7 @@ public class UploadService extends Service {
 		}
 	}
 
-	private static void onUploadFinished() {
+	private static synchronized void onUploadFinished() {
 		for (UploadProgressListener uploadProgressListener : uploadProgressListeners) {
 			uploadProgressListener.onFinished(recentlyUploaded.size(), failed.size());
 		}
@@ -749,11 +750,15 @@ public class UploadService extends Service {
 		return currentlyQueued;
 	}
 
-	public static Set<Media> getRecentlyUploaded() {
-		return recentlyUploaded;
-	}
+    public static synchronized List<Media> getRecentlyUploadedList() {
+        return new ArrayList<>(recentlyUploaded);
+    }
 
-	public static int getNbTotal() {
+    public static synchronized int getRecentlyUploadedSize() {
+        return recentlyUploaded.size();
+    }
+
+	public static synchronized int getNbTotal() {
 		return currentlyQueued.size() + recentlyUploaded.size() + failed.size();
 	}
 

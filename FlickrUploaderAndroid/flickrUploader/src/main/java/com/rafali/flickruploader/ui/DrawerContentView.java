@@ -1,23 +1,5 @@
 package com.rafali.flickruploader.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Click;
-import org.androidannotations.annotations.EViewGroup;
-import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.ViewById;
-import org.androidannotations.api.BackgroundExecutor;
-import org.slf4j.LoggerFactory;
-
-import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
-import uk.co.senab.bitmapcache.CacheableImageView;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -47,10 +29,29 @@ import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
 import com.rafali.flickruploader.ui.widget.TabView;
 import com.rafali.flickruploader2.R;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
+import org.androidannotations.annotations.EViewGroup;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
+import uk.co.senab.bitmapcache.CacheableImageView;
+
 @EViewGroup(R.layout.drawer_content)
 public class DrawerContentView extends RelativeLayout implements UploadProgressListener {
 
-	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DrawerContentView.class);
+	static final Logger LOG = LoggerFactory.getLogger(DrawerContentView.class);
 
 	public DrawerContentView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -192,26 +193,20 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 		renderButtons();
 	}
 
-	View createEmptyView(String text) {
-		TextView tv = (TextView) View.inflate(getContext(), R.layout.no_data, null);
-		tv.setText(text);
-		return tv;
-	}
-
 	public void updateLists() {
 		if (activity != null && !activity.destroyed && !activity.isPaused() && activity.getSlidingDrawer() != null && activity.getSlidingDrawer().isOpened()) {
 			BackgroundExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						List<Media> currentlyQueued = new ArrayList<Media>(UploadService.getCurrentlyQueued());
+						List<Media> currentlyQueued = new ArrayList<>(UploadService.getCurrentlyQueued());
 						Collections.sort(currentlyQueued, Utils.MEDIA_COMPARATOR);
 						Collections.reverse(currentlyQueued);
 						notifyDataSetChanged(queuedAdapter, currentlyQueued);
-						List<Media> recentlyUploaded = new ArrayList<Media>(UploadService.getRecentlyUploaded());
+						List<Media> recentlyUploaded = UploadService.getRecentlyUploadedList();
 						Collections.sort(recentlyUploaded, Utils.MEDIA_COMPARATOR_UPLOAD);
 						notifyDataSetChanged(uploadedAdapter, recentlyUploaded);
-						List<Media> failed = new ArrayList<Media>(UploadService.getFailed());
+						List<Media> failed = new ArrayList<>(UploadService.getFailed());
 						Collections.sort(failed, Utils.MEDIA_COMPARATOR);
 						notifyDataSetChanged(failedAdapter, failed);
 					} catch (Exception e) {
@@ -260,7 +255,8 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 										@Override
 										public void onResult(Boolean result) {
 											if (result) {
-												UploadService.dequeue(Arrays.asList(media));
+												UploadService.dequeue(
+														Collections.singletonList(media));
 											}
 										}
 									});
