@@ -316,38 +316,8 @@ public class UploadService extends Service {
 					if (mediaCurrentlyUploading == null || canUploadNow != CAN_UPLOAD.ok) {
 						paused = true;
 
-						synchronized (mPauseLock) {
-							// LOG.debug("waiting for work");
-							if (mediaCurrentlyUploading == null) {
-
-                                FlickrUploaderActivity uploaderActivity =
-                                        FlickrUploaderActivity.getInstance();
-                                if ((uploaderActivity == null || uploaderActivity.isPaused()) && !Utils.canAutoUploadBool()
-										&& System.currentTimeMillis() - lastUpload > 5 * 60 * 1000) {
-									running = false;
-									LOG.debug("stopping service after waiting for 5 minutes");
-									checkForFilesToDelete();
-								} else {
-									if (Utils.canAutoUploadBool()) {
-										mPauseLock.wait();
-									} else {
-										LOG.debug("will stop the service if no more upload {}",
-												ToolString.formatDuration(
-														System.currentTimeMillis() - started));
-										mPauseLock.wait(60000);
-									}
-								}
-							} else {
-                                FlickrUploaderActivity uploaderActivity =
-                                        FlickrUploaderActivity.getInstance();
-                                if (uploaderActivity != null && !uploaderActivity.isPaused()) {
-									mPauseLock.wait(2000);
-								} else {
-									mPauseLock.wait(60000);
-								}
-							}
-						}
-					} else {
+                        waitForWork();
+                    } else {
 						paused = false;
 						if (FlickrApi.isAuthentified()) {
 							long start = System.currentTimeMillis();
@@ -457,7 +427,34 @@ public class UploadService extends Service {
 			}
 			stopSelf();
 		}
-	}
+
+        // This method should be called from a loop, in which case this warning isn't valid
+        @SuppressWarnings("WaitNotInLoop")
+        private void waitForWork() throws InterruptedException {
+            synchronized (mPauseLock) {
+                // LOG.debug("waiting for work");
+                FlickrUploaderActivity uploaderActivity =
+                        FlickrUploaderActivity.getInstance();
+
+                if (mediaCurrentlyUploading == null) {
+                    if ((uploaderActivity == null || uploaderActivity.isPaused()) && !Utils.canAutoUploadBool()
+                            && System.currentTimeMillis() - lastUpload > 5 * 60_000) {
+                        running = false;
+                        LOG.debug("stopping service after waiting for 5 minutes");
+                        checkForFilesToDelete();
+                    } else {
+                        mPauseLock.wait(60_000);
+                    }
+                } else {
+                    if (uploaderActivity != null && !uploaderActivity.isPaused()) {
+                        mPauseLock.wait(2_000);
+                    } else {
+                        mPauseLock.wait(60_000);
+                    }
+                }
+            }
+        }
+    }
 
 	public static void wake() {
 		wake(false);
