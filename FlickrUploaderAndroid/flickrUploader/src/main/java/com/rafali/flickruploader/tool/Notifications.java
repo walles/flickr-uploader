@@ -1,6 +1,12 @@
 package com.rafali.flickruploader.tool;
 
-import com.rafali.common.ToolString;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+
 import com.rafali.flickruploader.FlickrUploader;
 import com.rafali.flickruploader.enums.VIEW_SIZE;
 import com.rafali.flickruploader.model.Media;
@@ -12,40 +18,32 @@ import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity_;
 import com.rafali.flickruploader2.R;
 
 import org.androidannotations.api.BackgroundExecutor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
 
 import uk.co.senab.bitmapcache.CacheableBitmapDrawable;
 
 public class Notifications {
 
-	static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Notifications.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Notifications.class);
 
-	static final android.app.NotificationManager manager = (android.app.NotificationManager) FlickrUploader.getAppContext().getSystemService(Context.NOTIFICATION_SERVICE);
+	private static final NotificationManager manager =
+			(NotificationManager) FlickrUploader.getAppContext().getSystemService(Context.NOTIFICATION_SERVICE);
 	private static PendingIntent resultPendingIntent;
 
 	private static Notification.Builder builderUploading;
 	private static Notification.Builder builderUploaded;
 
-	static long lastNotified = 0;
-
 	private static UploadProgressListener uploadProgressListener = new BasicUploadProgressListener() {
-
 		@Override
 		public void onProgress(Media media) {
 			Notifications.notifyProgress(media);
-		};
+		}
 
 		@Override
 		public void onFinished(int nbUploaded, int nbError) {
 			Notifications.notifyFinished(nbUploaded, nbError);
 		}
-
 	};
 
 	public static void init() {
@@ -79,9 +77,9 @@ public class Notifications {
 		}
 	}
 
-	static long lastUpdate = 0;
+	private static long lastUpdate = 0;
 
-	public static void notifyProgress(final Media media) {
+	private static void notifyProgress(final Media media) {
 		try {
 			if (!Utils.getBooleanProperty("notification_progress", true)) {
 				return;
@@ -103,6 +101,7 @@ public class Notifications {
 			builder.setProgress(1000, progress, false);
 			builder.setContentText(media.getName());
 			builder.setContentInfo(currentPosition + " / " + total);
+			builder.setSmallIcon(android.R.drawable.stat_sys_upload);
 
 			CacheableBitmapDrawable bitmapDrawable = Utils.getCache().getFromMemoryCache(media.getPath() + "_" + VIEW_SIZE.small);
 			if (bitmapDrawable == null || bitmapDrawable.getBitmap().isRecycled()) {
@@ -120,7 +119,6 @@ public class Notifications {
 			}
 
 			Notification notification = builder.build();
-			notification.icon = android.R.drawable.stat_sys_upload_done;
 			// notification.iconLevel = progress / 10;
 			manager.notify(0, notification);
 		} catch (Exception e) {
@@ -129,7 +127,7 @@ public class Notifications {
 
 	}
 
-	public static void notifyFinished(int nbUploaded, int nbError) {
+	private static void notifyFinished(int nbUploaded, int nbError) {
 		try {
 			manager.cancelAll();
 			if (FlickrUploaderActivity.getInstance() == null || FlickrUploaderActivity.getInstance().isPaused()) {
@@ -146,16 +144,13 @@ public class Notifications {
 					text += ", " + nbError + " error" + (nbError > 1 ? "s" : "");
 				}
 				builder.setContentText(text);
+				builder.setSmallIcon(android.R.drawable.stat_sys_upload_done);
 
-				Notification notification = builder.build();
-				notification.icon = android.R.drawable.stat_sys_upload_done;
-				// notification.iconLevel = progress / 10;
-				manager.notify(0, notification);
+				manager.notify(0, builder.build());
 			}
 		} catch (Exception e) {
-			LOG.error("FIXME: Log message missing", e);
+			LOG.error("Failed to handle upload-finished notification", e);
 		}
-
 	}
 
 	public static void clear() {
