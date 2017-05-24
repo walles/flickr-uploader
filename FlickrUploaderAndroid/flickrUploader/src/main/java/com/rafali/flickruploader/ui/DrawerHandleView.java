@@ -124,7 +124,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 
 					if (!FlickrApi.isAuthentified()) {
 						setMessage("Login into Flickr from the Preferences");
-					} else if (UploadService.getCurrentlyQueued().size() == 0) {
+					} else if (UploadService.getCurrentlyQueuedSize() == 0) {
 						String text = "No media queued";
 						int nbUploaded = UploadService.getRecentlyUploadedSize();
 						if (nbUploaded > 0) {
@@ -162,7 +162,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 						} else {
 							final Media media = UploadService.getMediaCurrentlyUploading();
 							if (media == null) {
-								setMessage("Uploading " + UploadService.getCurrentlyQueued().size() + " media");
+								setMessage("Uploading " + UploadService.getCurrentlyQueuedSize() + " media");
 							} else {
 								int currentPosition = UploadService.getRecentlyUploadedSize();
 								int total = UploadService.getNbTotal();

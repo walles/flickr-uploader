@@ -162,7 +162,8 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 	@Click(R.id.clear_btn)
 	void onClearClick() {
 		final int tab = queueTabView.getCurrentItem();
-		if (tab == TAB_QUEUED_INDEX && !UploadService.getCurrentlyQueued().isEmpty()) {
+		boolean uploadQueueEmpty = UploadService.getCurrentlyQueuedSize() == 0;
+		if (tab == TAB_QUEUED_INDEX && !uploadQueueEmpty) {
 			Utils.showConfirmCancel(activity, "Cancel uploads", "Do you confirm aborting the current upload and clear the upload queue?", new Utils.Callback<Boolean>() {
 				@Override
 				public void onResult(Boolean result) {
@@ -199,7 +200,7 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 				@Override
 				public void run() {
 					try {
-						List<Media> currentlyQueued = new ArrayList<>(UploadService.getCurrentlyQueued());
+						List<Media> currentlyQueued = UploadService.getCurrentlyQueuedList();
 						Collections.sort(currentlyQueued, Utils.MEDIA_COMPARATOR);
 						Collections.reverse(currentlyQueued);
 						notifyDataSetChanged(queuedAdapter, currentlyQueued);

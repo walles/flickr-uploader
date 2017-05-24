@@ -726,6 +726,7 @@ public class UploadService extends Service {
                         while (file.length() < 100 && sleep < 5) {
                             LOG.debug("sleeping a bit");
                             sleep++;
+                            //noinspection BusyWait
                             Thread.sleep(1000);
                         }
                         long fileAge = System.currentTimeMillis() - file.lastModified();
@@ -746,9 +747,13 @@ public class UploadService extends Service {
 
 	}
 
-	public static Set<Media> getCurrentlyQueued() {
-		return currentlyQueued;
-	}
+    public static synchronized int getCurrentlyQueuedSize() {
+        return currentlyQueued.size();
+    }
+
+    public static synchronized List<Media> getCurrentlyQueuedList() {
+        return new ArrayList<>(currentlyQueued);
+    }
 
     public static synchronized List<Media> getRecentlyUploadedList() {
         return new ArrayList<>(recentlyUploaded);
