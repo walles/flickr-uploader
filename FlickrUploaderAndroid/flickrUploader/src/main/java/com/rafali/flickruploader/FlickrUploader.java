@@ -3,8 +3,6 @@ package com.rafali.flickruploader;
 import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.rafali.flickruploader.logging.LoggingUtils;
 import com.rafali.flickruploader.model.FlickrSet;
@@ -50,9 +48,12 @@ public class FlickrUploader extends Application {
         }
     }
 
-    @Nullable
     public static Context getAppContext() {
-        return weakContext.get();
+        Context returnMe = weakContext.get();
+        if (returnMe == null) {
+            throw new NullPointerException("Weak app context not available");
+        }
+        return returnMe;
     }
 
     private static Handler handler;
