@@ -405,7 +405,9 @@ public class UploadService extends Service {
 
 							if (exc == null) {
 								nbNetworkRetries = 0;
-								lastUpload = System.currentTimeMillis();
+                                synchronized (mPauseLock) {
+                                    lastUpload = System.currentTimeMillis();
+                                }
 								LOG.debug("Upload success : {}ms {}", time,
 										mediaCurrentlyUploading);
 								mediaCurrentlyUploading.setStatus(STATUS.UPLOADED);
