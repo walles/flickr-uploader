@@ -767,11 +767,15 @@ public class UploadService extends Service {
 		return currentlyQueued.size() + recentlyUploaded.size() + failed.size();
 	}
 
-	public static Set<Media> getFailed() {
-		return failed;
-	}
+    public static synchronized int getFailedSize() {
+        return failed.size();
+    }
 
-	private static long lastDeleteCheck = Utils.getLongProperty("lastDeleteCheck");
+    public static synchronized List<Media> getFailedList() {
+        return new ArrayList<>(failed);
+    }
+
+    private static long lastDeleteCheck = Utils.getLongProperty("lastDeleteCheck");
 
 	private static void checkForFilesToDelete() {
 		if (Utils.isAutoDelete() && System.currentTimeMillis() - lastDeleteCheck > 3600 * 1000L) {

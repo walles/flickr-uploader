@@ -130,7 +130,7 @@ public class DrawerHandleView extends LinearLayout implements UploadProgressList
 						if (nbUploaded > 0) {
 							text += ", " + nbUploaded + " recently uploaded";
 						}
-						int nbError = UploadService.getFailed().size();
+						int nbError = UploadService.getFailedSize();
 						if (nbError > 0) {
 							text += ", " + nbError + " error" + (nbError > 1 ? "s" : "");
 						}

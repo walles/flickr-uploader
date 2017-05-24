@@ -207,7 +207,7 @@ public class DrawerContentView extends RelativeLayout implements UploadProgressL
 						List<Media> recentlyUploaded = UploadService.getRecentlyUploadedList();
 						Collections.sort(recentlyUploaded, Utils.MEDIA_COMPARATOR_UPLOAD);
 						notifyDataSetChanged(uploadedAdapter, recentlyUploaded);
-						List<Media> failed = new ArrayList<>(UploadService.getFailed());
+						List<Media> failed = UploadService.getFailedList();
 						Collections.sort(failed, Utils.MEDIA_COMPARATOR);
 						notifyDataSetChanged(failedAdapter, failed);
 					} catch (Exception e) {
