@@ -1,18 +1,6 @@
 package com.rafali.flickruploader.model;
 
-import java.io.File;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import se.emilsjolander.sprinkles.annotations.Cacheable;
-
-import se.emilsjolander.sprinkles.Model;
-import se.emilsjolander.sprinkles.Transaction;
-import se.emilsjolander.sprinkles.annotations.Column;
-import se.emilsjolander.sprinkles.annotations.PrimaryKey;
-import se.emilsjolander.sprinkles.annotations.Table;
+import android.support.annotation.Nullable;
 
 import com.rafali.common.ToolString;
 import com.rafali.flickruploader.enums.MEDIA_TYPE;
@@ -20,6 +8,19 @@ import com.rafali.flickruploader.enums.PRIVACY;
 import com.rafali.flickruploader.enums.STATUS;
 import com.rafali.flickruploader.tool.Utils;
 import com.rafali.flickruploader.ui.activity.FlickrUploaderActivity;
+
+import java.io.File;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import se.emilsjolander.sprinkles.Model;
+import se.emilsjolander.sprinkles.Transaction;
+import se.emilsjolander.sprinkles.annotations.Cacheable;
+import se.emilsjolander.sprinkles.annotations.Column;
+import se.emilsjolander.sprinkles.annotations.PrimaryKey;
+import se.emilsjolander.sprinkles.annotations.Table;
 
 @Table("Media")
 @Cacheable
@@ -76,7 +77,7 @@ public class Media extends Model {
 
 	@Column("errorMessage")
 	private String errorMessage;
-	
+
 	private long timestampUploadStarted;
 
 	public Media() {
@@ -262,7 +263,7 @@ public class Media extends Model {
 		this.timestampImported = System.currentTimeMillis();
 	}
 
-	public void save2(Transaction t) {
+	public void save2(@Nullable Transaction t) {
 		FlickrUploaderActivity.updateStatic(this);
 		if (t == null) {
 			save();
