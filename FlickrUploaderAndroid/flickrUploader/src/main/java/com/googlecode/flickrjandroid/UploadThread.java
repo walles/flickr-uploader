@@ -202,7 +202,6 @@ class UploadThread {
     private void setResponse(Object response) {
         synchronized (lock) {
             if (this.response != null) {
-                //noinspection AccessToStaticFieldLockedOnInstance
                 LOG.warn("Upload response set multiple times",
                         new RuntimeException("Upload response already set to <" + this.response
                                 + ">, not resetting"));
@@ -348,11 +347,9 @@ class UploadThread {
 
             if (response instanceof Throwable) {
                 long dtMs = System.currentTimeMillis() - uploadStartMs;
-                //noinspection AccessToStaticFieldLockedOnInstance
                 LOG.info("Upload exceptioned after {}ms", dtMs);
             }
 
-            //noinspection AccessToStaticFieldLockedOnInstance
             LOG.debug("response : {}", response);
 
             if (response instanceof IOException) {
