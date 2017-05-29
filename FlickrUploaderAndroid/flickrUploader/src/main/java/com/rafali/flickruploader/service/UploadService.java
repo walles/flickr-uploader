@@ -301,9 +301,9 @@ public class UploadService extends Service {
                     continue;
 
 				} catch (InterruptedException e) {
-					LOG.warn("Thread interrupted");
+					LOG.warn("Thread interrupted", e);
 				} catch (Exception e) {
-					LOG.error("FIXME: Log message missing", e);
+					LOG.error("Upload error", e);
 				} finally {
 					if (mediaCurrentlyUploading != null) {
 						mediaPreviouslyUploading = mediaCurrentlyUploading;
