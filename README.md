@@ -1,6 +1,5 @@
 Flickr Uploader
 ===============
-
 This is a fork off of <https://github.com/rafali/flickr-uploader>. The
 difference is mostly that this project comes with build instructions and that
 a number of crashes have been fixed. Yes, I asked @rafali before doing this.
@@ -55,7 +54,7 @@ Releasing
 <http://stackoverflow.com/a/21020469/473672>
 1. `cd FlickrUploaderAndroid`
 1. Do `git tag` and decide on what the new version number should be
-1. `git tag vN.X.Y` for the new version
+1. `git tag N.X.Y` for the new version
 1. `./gradlew build`
 1. Upload `flickrUploader/build/outputs/apk/flickrUploader-release.apk` to
 Google Play
