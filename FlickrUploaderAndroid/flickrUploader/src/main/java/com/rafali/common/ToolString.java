@@ -1,14 +1,16 @@
 package com.rafali.common;
 
+import android.support.annotation.Nullable;
+
 import java.text.DecimalFormat;
 import java.util.Locale;
 
 public class ToolString {
-	public static boolean isNotBlank(String str) {
+	public static boolean isNotBlank(@Nullable String str) {
 		return !isBlank(str);
 	}
 
-	public static boolean isBlank(String str) {
+	public static boolean isBlank(@Nullable String str) {
 		if (str == null)
 			return true;
 		return str.trim().length() == 0;

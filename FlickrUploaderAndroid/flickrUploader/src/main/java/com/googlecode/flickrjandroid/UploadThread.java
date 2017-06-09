@@ -363,7 +363,9 @@ class UploadThread {
                 throw new UploadService.UploadException(
                         throwable.getClass().getSimpleName() + ": " + throwable.getMessage(), throwable);
             }
-            return null;
+
+            throw new UploadService.UploadException(
+                    "Unsupported response type: " + response.getClass().getName(), false);
         }
     }
 }

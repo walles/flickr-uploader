@@ -199,7 +199,7 @@ public class Media extends Model {
 		return this.flickrId;
 	}
 
-	public void setFlickrId(String flickrId) {
+	public void setFlickrId(@Nullable String flickrId) {
 		if (ToolString.isNotBlank(flickrId)) {
 			this.flickrId = flickrId;
 			setStatus(STATUS.UPLOADED);

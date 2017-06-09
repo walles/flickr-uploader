@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.crashlytics.android.answers.CustomEvent;
@@ -324,6 +325,7 @@ public class UploadService extends Service {
                 }
                 mediaPreviouslyUploading = null;
                 if (nothingCurrentlyUploading()) {
+                    // FIXME: If an upload terminates badly because the network disappears, do we ever call this?
                     onUploadFinished();
                     FlickrUploader.cleanLogs();
                 }
@@ -578,6 +580,7 @@ public class UploadService extends Service {
 
 	private Thread thread;
 
+	@Nullable
 	private static synchronized Media checkQueue() {
 		List<Media> medias = Utils.loadMedia(false);
 		recentlyUploaded.clear();
