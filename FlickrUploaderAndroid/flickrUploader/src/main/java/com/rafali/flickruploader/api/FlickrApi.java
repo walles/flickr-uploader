@@ -396,7 +396,7 @@ public class FlickrApi {
 		return null;
 	}
 
-	static Set<String> unsupportedExtensions = Sets.newHashSet("skm", "mkv");
+	static Set<String> unsupportedExtensions = Sets.newHashSet("skm", "mkv", "dng");
 	static Set<String> whitelistedExtensions = Sets.newHashSet("jpg", "png", "jpeg", "gif", "tiff", "avi", "wmv", "mov", "mpeg", "3gp", "m2ts", "ogg", "ogv");
 
 	static Map<String, Integer> nbUnsupportedExtensions;
