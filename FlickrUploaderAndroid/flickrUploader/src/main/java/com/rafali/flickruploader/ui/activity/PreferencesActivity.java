@@ -108,7 +108,7 @@ public class PreferencesActivity extends AbstractPreferenceActivity implements O
 		findPreference("rate").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.rafali.flickruploader2")));
+				activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.gmail.walles.johan.flickruploader2")));
 				Utils.setBooleanProperty(STR.hasRated, true);
 				return false;
 			}

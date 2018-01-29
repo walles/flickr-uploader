@@ -1096,7 +1096,7 @@ public final class Utils {
 	}
 
 	public static String getUploadDescription() {
-		return sp.getString("upload_description", "uploaded with <a href='https://play.google.com/store/apps/details?id=com.rafali.flickruploader2'>Uploader for Flickr</a> for Android");
+		return sp.getString("upload_description", "uploaded with <a href='https://play.google.com/store/apps/details?id=com.gmail.walles.johan.flickruploader2'>Uploader for Flickr</a> for Android");
 	}
 
 	public static long getUploadDelayMs() {
