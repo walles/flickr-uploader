@@ -49,7 +49,7 @@ ext {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.gmail.walles.johan.flickruploader2"
@@ -106,11 +106,11 @@ dependencies {
     compile files('libs/flickrj-android-cleaned-2.0.6.jar')
     compile 'com.google.guava:guava:18.0'
     compile 'com.github.tony19:logback-android-classic:1.1.1-6'
-    compile 'org.slf4j:slf4j-api:1.7.5'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
-        transitive = true;
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
+        transitive = true
     }
-    compile('com.crashlytics.sdk.android:answers:1.3.11@aar') {
-        transitive = true;
+    compile('com.crashlytics.sdk.android:answers:1.4.3@aar') {
+        transitive = true
     }
 }
